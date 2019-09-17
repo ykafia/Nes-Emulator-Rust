@@ -1,4 +1,24 @@
+#![allow(non_snake_case)]
 use super::common_traits::*;
+
+trait CPUFunctions{
+    
+    fn get_flag(self,f:FLAGS6502)->u8;
+    fn set_flag(self,f:FLAGS6502,v:bool)->();
+    
+    fn IMP() ->u8;    
+    fn IMM()->u8;
+    fn ZP0()->u8;    
+    fn ZPX()->u8;
+    fn ZPY()->u8;    
+    fn REL()->u8;
+    fn ABS()->u8;    
+    fn ABX()->u8;
+    fn ABY()->u8;
+    fn IND()->u8;
+    fn IZX()->u8;
+    fn IZY()->u8;
+}
 
 struct CPU {
     a: u8,
