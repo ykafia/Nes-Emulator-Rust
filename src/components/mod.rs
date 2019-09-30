@@ -1,9 +1,5 @@
-pub use self::cpu::{
-    CPU6502
-};
-pub use self::bus::{
-    Bus
-};
+pub use self::bus::*;
+pub use self::cpu::*;
 
-mod cpu;
 mod bus;
+mod cpu;
