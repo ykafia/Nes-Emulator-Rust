@@ -1,6 +1,3 @@
-#![allow(non_snake_case)]
-use super::common_traits::*;
-
 trait CPUFunctions{
     
     fn get_flag(self,f:FLAGS6502)->u8;
@@ -46,21 +43,21 @@ trait CPUFunctions{
 
 }
 
-struct CPU {
-    a: u8,
-    x: u8,
-    y: u8,
-    stkp: u8,
-    pc: u16,
-    status: u8,
-    data:u8, // Data that can be fetched for some operations when needed
-    addr_abs:u16, // Absolute Adress to another data source needed
-    addr_rel:u16,
-    curr_opcode:u8, // Opcode currently running 
-    cycles:u8 // number of cycles left for the current opcode to finish
+pub struct CPU6502 {
+    pub a: u8,
+    pub x: u8,
+    pub y: u8,
+    pub stkp: u8,
+    pub pc: u16,
+    pub status: u8,
+    pub data:u8, // Data that can be fetched for some operations when needed
+    pub addr_abs:u16, // Absolute Adress to another data source needed
+    pub addr_rel:u16,
+    pub curr_opcode:u8, // Opcode currently running 
+    pub cycles:u8 // number of cycles left for the current opcode to finish
 
 }
-enum FLAGS6502 {
+pub enum FLAGS6502 {
     C = 1 << 0, // Carry bit
     Z = 1 << 1, // Zero
     I = 1 << 2, // Disable interrupts

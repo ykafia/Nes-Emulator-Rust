@@ -1,5 +1,4 @@
 use modular_bitfield::prelude::*;
-use super::common_traits::*;
 
 #[bitfield]
 #[derive(Debug, PartialEq, Eq, Clone)]

@@ -1,12 +1,15 @@
-mod byte_types;
-use byte_types::*;
-mod cpu_type;
-use cpu_type::*;
-mod common_traits;
-use common_traits::*;
+mod components;
+mod utils;
+
+use components::{
+    CPU6502
+};
+use utils::{
+    BaseByte
+};
 
 fn main() {
     let mut x = BaseByte::new();
     x.set_c(0b101);
-    println!("{}", x.to_byte());
+    //println!("{}", x.to_byte());
 }
