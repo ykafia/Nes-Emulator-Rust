@@ -5,7 +5,8 @@ use components::*;
 use utils::*;
 
 fn main() {
-    let mut x = BaseByte::new();
-    x.set_c(0b101);
-    println!("{}", x.to_byte());
+    let mut bus = Bus::new();
+    let cpu = OLC6502::new();
+    cpu.write(&mut bus, 0, 1u8);
+    println!("{:?}", bus.read(0, true));
 }

@@ -32,11 +32,34 @@ pub struct INSTRUCTION {
     pub cycles: u8,
 }
 
+pub trait OpCodesCaller {
+    fn apply(&self, cpu: &mut OLC6502) -> u8;
+}
+
 /// Trait defining all the 6502 functions
 pub trait CPUFunctions {
     fn get_flag(self, f: FLAGS6502) -> u8;
     fn set_flag(self, f: FLAGS6502, v: bool) -> ();
 
+    /// Clock management function
+    /// This should control the number of clock cycles each instructions takes.
+    fn clock();
+    fn reset();
+    fn interupt_req();
+    fn non_maskable_interupt_req();
+    fn fetch_data();
+}
+pub trait CpuIO {
+    fn read(&self, bus: &mut Bus, addr: usize, read_only: bool) -> u8;
+    fn write(&self, bus: &mut Bus, addr: usize, data: u8);
+}
+
+pub trait InstructionFunctions {
+    fn operate(&self);
+    fn addrmode(&self);
+}
+
+pub trait AdressingModes {
     // Addressing modes : specifies the way to get some data.
     /// Implied : the address containing the operands are implicity known
     fn IMP() -> u8;
@@ -62,93 +85,85 @@ pub trait CPUFunctions {
     fn IZX() -> u8;
     /// Indirect indexed Y : Indirect mode with use of the Y register
     fn IZY() -> u8;
-
-    
-    fn ADC() -> u8;
-    fn AND() -> u8;
-    fn ASL() -> u8;
-    fn BCC() -> u8;
-    fn BCS() -> u8;
-    fn BEQ() -> u8;
-    fn BIT() -> u8;
-    fn BMI() -> u8;
-    fn BNE() -> u8;
-    fn BPL() -> u8;
-    fn BRK() -> u8;
-    fn BVC() -> u8;
-    fn BVS() -> u8;
-    fn CLC() -> u8;
-    fn CLD() -> u8;
-    fn CLI() -> u8;
-    fn CLV() -> u8;
-    fn CMP() -> u8;
-    fn CPX() -> u8;
-    fn CPY() -> u8;
-    fn DEC() -> u8;
-    fn DEX() -> u8;
-    fn DEY() -> u8;
-    fn EOR() -> u8;
-    fn INC() -> u8;
-    fn INX() -> u8;
-    fn INY() -> u8;
-    fn JMP() -> u8;
-    fn JSR() -> u8;
-    fn LDA() -> u8;
-    fn LDX() -> u8;
-    fn NOP() -> u8;
-    fn ORA() -> u8;
-    fn PHA() -> u8;
-    fn PHP() -> u8;
-    fn PLA() -> u8;
-    fn PLP() -> u8;
-    fn ROL() -> u8;
-    fn ROR() -> u8;
-    fn RTI() -> u8;
-    fn RTS() -> u8;
-    fn SBC() -> u8;
-    fn SEC() -> u8;
-    fn SED() -> u8;
-    fn SEI() -> u8;
-    fn STA() -> u8;
-    fn STX() -> u8;
-    fn STY() -> u8;
-    fn TAX() -> u8;
-    fn TAY() -> u8;
-    fn TSX() -> u8;
-    fn TXA() -> u8;
-    fn TXS() -> u8;
-    fn TYA() -> u8;
-
-    fn OpCodes(); // Unintended operations
-                  // Those are the clock based functions
-    fn clock(); // This should control the number of clock cycles each instructions takes.
-    fn reset();
-    fn interupt_req();
-    fn non_maskable_interupt_req();
-    fn fetch_data(); // it should fetch data
 }
 
-pub trait CpuIO {
-    fn read(bus: &mut Bus, addr: usize, read_only: bool) -> u8;
-    fn write(bus: &mut Bus, addr: usize, data: u8);
+pub trait OperationCodes {
+    fn ADC(&self) -> u8;
+    fn AND(&self) -> u8;
+    fn ASL(&self) -> u8;
+    fn BCC(&self) -> u8;
+    fn BCS(&self) -> u8;
+    fn BEQ(&self) -> u8;
+    fn BIT(&self) -> u8;
+    fn BMI(&self) -> u8;
+    fn BNE(&self) -> u8;
+    fn BPL(&self) -> u8;
+    fn BRK(&self) -> u8;
+    fn BVC(&self) -> u8;
+    fn BVS(&self) -> u8;
+    fn CLC(&self) -> u8;
+    fn CLD(&self) -> u8;
+    fn CLI(&self) -> u8;
+    fn CLV(&self) -> u8;
+    fn CMP(&self) -> u8;
+    fn CPX(&self) -> u8;
+    fn CPY(&self) -> u8;
+    fn DEC(&self) -> u8;
+    fn DEX(&self) -> u8;
+    fn DEY(&self) -> u8;
+    fn EOR(&self) -> u8;
+    fn INC(&self) -> u8;
+    fn INX(&self) -> u8;
+    fn INY(&self) -> u8;
+    fn JMP(&self) -> u8;
+    fn JSR(&self) -> u8;
+    fn LDA(&self) -> u8;
+    fn LDX(&self) -> u8;
+    fn NOP(&self) -> u8;
+    fn ORA(&self) -> u8;
+    fn PHA(&self) -> u8;
+    fn PHP(&self) -> u8;
+    fn PLA(&self) -> u8;
+    fn PLP(&self) -> u8;
+    fn ROL(&self) -> u8;
+    fn ROR(&self) -> u8;
+    fn RTI(&self) -> u8;
+    fn RTS(&self) -> u8;
+    fn SBC(&self) -> u8;
+    fn SEC(&self) -> u8;
+    fn SED(&self) -> u8;
+    fn SEI(&self) -> u8;
+    fn STA(&self) -> u8;
+    fn STX(&self) -> u8;
+    fn STY(&self) -> u8;
+    fn TAX(&self) -> u8;
+    fn TAY(&self) -> u8;
+    fn TSX(&self) -> u8;
+    fn TXA(&self) -> u8;
+    fn TXS(&self) -> u8;
+    fn TYA(&self) -> u8;
+
+    fn XXX(&self) -> u8; // Unintended operations
 }
 
-pub trait InstructionFunctions {
-    fn operate(&self);
-    fn addrmode(&self);
-}
 
-//TODO: Implement InstructionFunctions
-// This trait should pattern match the name and call a specific instruction
-// Should work as a pointer of function
+
+
+
+//#######################################################################################
+//#                         IMPLEMENTATION OF TRAITS                                    #
+//#             Gonna be a long, long way till the EOF, just bear with it               #
+//#######################################################################################
+
+
 
 impl OLC6502 {
     pub fn new() -> OLC6502 {
         OLC6502 {
-            a: 0,
-            x: 0,
-            y: 0,
-            stkp: 0,
+            a: 0,    // a register
+            x: 0,    // x register for low index
+            y: 0,    // y register for high index
+            stkp: 0, // stack pointer
             pc: 0,
             status: 0,
             data: 0,     // Data that can be fetched for some operations when needed
@@ -161,11 +176,281 @@ impl OLC6502 {
 }
 
 impl CpuIO for OLC6502 {
-    fn read(bus: &mut Bus, addr: usize, read_only: bool) -> u8 {
+    fn read(&self, bus: &mut Bus, addr: usize, read_only: bool) -> u8 {
         //TODO: check if the address size is in the correct
         bus.read(addr, read_only)
     }
-    fn write(bus: &mut Bus, addr: usize, data: u8) {
+    fn write(&self, bus: &mut Bus, addr: usize, data: u8) {
         bus.write(addr, data);
+    }
+}
+
+impl AdressingModes for OLC6502{
+    fn IMP() -> u8{
+        0u8
+    }
+    fn IMM() -> u8{
+        0u8
+    }
+    fn ZP0() -> u8{
+        0u8
+    }
+    fn ZPX() -> u8{
+        0u8
+    }
+    fn ZPY() -> u8{
+        0u8
+    }
+    fn REL() -> u8{
+        0u8
+    }
+    fn ABS() -> u8{
+        0u8
+    }
+    fn ABX() -> u8{
+        0u8
+    }
+    fn ABY() -> u8{
+        0u8
+    }
+    fn IND() -> u8{
+        0u8
+    }
+    fn IZX() -> u8{
+        0u8
+    }
+    fn IZY() -> u8{
+        0u8
+    }
+}
+
+impl OpCodesCaller for INSTRUCTION {
+    fn apply(&self, cpu: &mut OLC6502) -> u8 {
+        match self.name.as_str() {
+            "ADC" => cpu.ADC(),
+            "AND" => cpu.AND(),
+            "ASL" => cpu.ASL(),
+            "BCC" => cpu.BCC(),
+            "BCS" => cpu.BCS(),
+            "BEQ" => cpu.BEQ(),
+            "BIT" => cpu.BIT(),
+            "BMI" => cpu.BMI(),
+            "BNE" => cpu.BNE(),
+            "BPL" => cpu.BPL(),
+            "BRK" => cpu.BRK(),
+            "BVC" => cpu.BVC(),
+            "BVS" => cpu.BVS(),
+            "CLC" => cpu.CLC(),
+            "CLD" => cpu.CLD(),
+            "CLI" => cpu.CLI(),
+            "CLV" => cpu.CLV(),
+            "CMP" => cpu.CMP(),
+            "CPX" => cpu.CPX(),
+            "CPY" => cpu.CPY(),
+            "DEC" => cpu.DEC(),
+            "DEX" => cpu.DEX(),
+            "DEY" => cpu.DEY(),
+            "EOR" => cpu.EOR(),
+            "INC" => cpu.INC(),
+            "INX" => cpu.INX(),
+            "INY" => cpu.INY(),
+            "JMP" => cpu.JMP(),
+            "JSR" => cpu.JSR(),
+            "LDA" => cpu.LDA(),
+            "LDX" => cpu.LDX(),
+            "NOP" => cpu.NOP(),
+            "ORA" => cpu.ORA(),
+            "PHA" => cpu.PHA(),
+            "PHP" => cpu.PHP(),
+            "PLA" => cpu.PLA(),
+            "PLP" => cpu.PLP(),
+            "ROL" => cpu.ROL(),
+            "ROR" => cpu.ROR(),
+            "RTI" => cpu.RTI(),
+            "RTS" => cpu.RTS(),
+            "SBC" => cpu.SBC(),
+            "SEC" => cpu.SEC(),
+            "SED" => cpu.SED(),
+            "SEI" => cpu.SEI(),
+            "STA" => cpu.STA(),
+            "STX" => cpu.STX(),
+            "STY" => cpu.STY(),
+            "TAX" => cpu.TAX(),
+            "TAY" => cpu.TAY(),
+            "TSX" => cpu.TSX(),
+            "TXA" => cpu.TXA(),
+            "TXS" => cpu.TXS(),
+            "TYA" => cpu.TYA(),
+            _ => cpu.XXX(), // Unintended operations
+        }
+    }
+}
+
+impl OperationCodes for OLC6502 {
+    fn ADC(&self) -> u8 {
+        0u8
+    }
+    fn AND(&self) -> u8 {
+        0u8
+    }
+    fn ASL(&self) -> u8 {
+        0u8
+    }
+    fn BCC(&self) -> u8 {
+        0u8
+    }
+    fn BCS(&self) -> u8 {
+        0u8
+    }
+    fn BEQ(&self) -> u8 {
+        0u8
+    }
+    fn BIT(&self) -> u8 {
+        0u8
+    }
+    fn BMI(&self) -> u8 {
+        0u8
+    }
+    fn BNE(&self) -> u8 {
+        0u8
+    }
+    fn BPL(&self) -> u8 {
+        0u8
+    }
+    fn BRK(&self) -> u8 {
+        0u8
+    }
+    fn BVC(&self) -> u8 {
+        0u8
+    }
+    fn BVS(&self) -> u8 {
+        0u8
+    }
+    fn CLC(&self) -> u8 {
+        0u8
+    }
+    fn CLD(&self) -> u8 {
+        0u8
+    }
+    fn CLI(&self) -> u8 {
+        0u8
+    }
+    fn CLV(&self) -> u8 {
+        0u8
+    }
+    fn CMP(&self) -> u8 {
+        0u8
+    }
+    fn CPX(&self) -> u8 {
+        0u8
+    }
+    fn CPY(&self) -> u8 {
+        0u8
+    }
+    fn DEC(&self) -> u8 {
+        0u8
+    }
+    fn DEX(&self) -> u8 {
+        0u8
+    }
+    fn DEY(&self) -> u8 {
+        0u8
+    }
+    fn EOR(&self) -> u8 {
+        0u8
+    }
+    fn INC(&self) -> u8 {
+        0u8
+    }
+    fn INX(&self) -> u8 {
+        0u8
+    }
+    fn INY(&self) -> u8 {
+        0u8
+    }
+    fn JMP(&self) -> u8 {
+        0u8
+    }
+    fn JSR(&self) -> u8 {
+        0u8
+    }
+    fn LDA(&self) -> u8 {
+        0u8
+    }
+    fn LDX(&self) -> u8 {
+        0u8
+    }
+    fn NOP(&self) -> u8 {
+        0u8
+    }
+    fn ORA(&self) -> u8 {
+        0u8
+    }
+    fn PHA(&self) -> u8 {
+        0u8
+    }
+    fn PHP(&self) -> u8 {
+        0u8
+    }
+    fn PLA(&self) -> u8 {
+        0u8
+    }
+    fn PLP(&self) -> u8 {
+        0u8
+    }
+    fn ROL(&self) -> u8 {
+        0u8
+    }
+    fn ROR(&self) -> u8 {
+        0u8
+    }
+    fn RTI(&self) -> u8 {
+        0u8
+    }
+    fn RTS(&self) -> u8 {
+        0u8
+    }
+    fn SBC(&self) -> u8 {
+        0u8
+    }
+    fn SEC(&self) -> u8 {
+        0u8
+    }
+    fn SED(&self) -> u8 {
+        0u8
+    }
+    fn SEI(&self) -> u8 {
+        0u8
+    }
+    fn STA(&self) -> u8 {
+        0u8
+    }
+    fn STX(&self) -> u8 {
+        0u8
+    }
+    fn STY(&self) -> u8 {
+        0u8
+    }
+    fn TAX(&self) -> u8 {
+        0u8
+    }
+    fn TAY(&self) -> u8 {
+        0u8
+    }
+    fn TSX(&self) -> u8 {
+        0u8
+    }
+    fn TXA(&self) -> u8 {
+        0u8
+    }
+    fn TXS(&self) -> u8 {
+        0u8
+    }
+    fn TYA(&self) -> u8 {
+        0u8
+    }
+
+    fn XXX(&self) -> u8 {
+        0u8
     }
 }
