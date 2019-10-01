@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 
 use super::bus::*;
+use super::instruction_generator::get_lookup_list;
 
 //use ndarray::Array2;
 
@@ -18,7 +19,7 @@ pub struct OLC6502 {
     pub curr_opcode: u8, // Opcode currently running
     pub cycles: u8, // number of cycles left for the current opcode to finish
 
-    pub lookup: Vec<INSTRUCTION>      
+    pub lookup: Vec<Vec<INSTRUCTION>>      
 }
 /// enum representing the various instruction flags
 pub enum FLAGS6502 {
@@ -480,64 +481,4 @@ impl OperationCodes for OLC6502 {
 }
 
 
-fn get_lookup_list() -> Vec<INSTRUCTION>{
-    vec![
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
-        
-    ]
-}
+
