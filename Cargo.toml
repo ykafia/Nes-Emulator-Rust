@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 modular-bitfield ="0.6.0"
+ndarray = "0.13.0"

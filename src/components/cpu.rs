@@ -1,6 +1,9 @@
 #![allow(non_snake_case)]
 
 use super::bus::*;
+
+//use ndarray::Array2;
+
 /// Struct representing the 6502 cpu's data
 pub struct OLC6502 {
     pub a: u8,
@@ -13,7 +16,9 @@ pub struct OLC6502 {
     pub addr_abs: u16, // Absolute Adress to another data source needed
     pub addr_rel: u16,
     pub curr_opcode: u8, // Opcode currently running
-    pub cycles: u8,      // number of cycles left for the current opcode to finish
+    pub cycles: u8, // number of cycles left for the current opcode to finish
+
+    pub lookup: Vec<INSTRUCTION>      
 }
 /// enum representing the various instruction flags
 pub enum FLAGS6502 {
@@ -27,13 +32,17 @@ pub enum FLAGS6502 {
     N = 1 << 7, // Negative
 }
 /// A struct representing instructions by name and corresponding function.
+
 pub struct INSTRUCTION {
-    pub name: String,
-    pub cycles: u8,
+    pub opcode : String,
+    pub addr_mode : String,
+    pub cycles: u8
 }
 
-pub trait OpCodesCaller {
-    fn apply(&self, cpu: &mut OLC6502) -> u8;
+
+pub trait InstructionFunctions {
+    fn apply_op(&self, cpu: &mut OLC6502) -> u8;
+    fn apply_addresing_mode(&self, cpu: &mut OLC6502) -> u8;
 }
 
 /// Trait defining all the 6502 functions
@@ -54,37 +63,33 @@ pub trait CpuIO {
     fn write(&self, bus: &mut Bus, addr: usize, data: u8);
 }
 
-pub trait InstructionFunctions {
-    fn operate(&self);
-    fn addrmode(&self);
-}
 
-pub trait AdressingModes {
+pub trait AddressingModes {
     // Addressing modes : specifies the way to get some data.
     /// Implied : the address containing the operands are implicity known
-    fn IMP() -> u8;
+    fn IMP(&self) -> u8;
     /// Immediate : addressing mode, the second byte of the instruction contains the operands
-    fn IMM() -> u8;
+    fn IMM(&self) -> u8;
     /// Zero Page : fetching only the second byte knowing the first one is zero. It looks for the 1st element in the instruction matrix. Performance
-    fn ZP0() -> u8;
+    fn ZP0(&self) -> u8;
     /// Zero Page X : Adds only the second byte to the index range, faster adress accessing like ZP0    
-    fn ZPX() -> u8;
+    fn ZPX(&self) -> u8;
     /// Zero Page Y : Adds only the second byte to the index range, faster adress accessing like ZP0    
-    fn ZPY() -> u8;
+    fn ZPY(&self) -> u8;
     /// Relative : Used only for branch instructions and establish destination for the conditinal branch  
-    fn REL() -> u8;
+    fn REL(&self) -> u8;
     /// Absolute : Second byte specifies the eight low order bits of the effective address while the third byte gives the high order bits. Thus making it possible to adress a wallopin 64K bytes of data
-    fn ABS() -> u8;
+    fn ABS(&self) -> u8;
     /// Absolute X : Used with the X register
-    fn ABX() -> u8;
+    fn ABX(&self) -> u8;
     /// Absolute Y : Used with the Y register
-    fn ABY() -> u8;
+    fn ABY(&self) -> u8;
     /// Absolute Indirect : Second byte gives the low order byte of the memory location, high order in third byte.
-    fn IND() -> u8;
+    fn IND(&self) -> u8;
     /// Indirect indexed X : Indirect mode with use of the X register
-    fn IZX() -> u8;
+    fn IZX(&self) -> u8;
     /// Indirect indexed Y : Indirect mode with use of the Y register
-    fn IZY() -> u8;
+    fn IZY(&self) -> u8;
 }
 
 pub trait OperationCodes {
@@ -159,6 +164,7 @@ pub trait OperationCodes {
 
 impl OLC6502 {
     pub fn new() -> OLC6502 {
+        
         OLC6502 {
             a: 0,    // a register
             x: 0,    // x register for low index
@@ -171,6 +177,7 @@ impl OLC6502 {
             addr_rel: 0,
             curr_opcode: 0, // Opcode currently running
             cycles: 0,
+            lookup : get_lookup_list()
         }
     }
 }
@@ -185,48 +192,48 @@ impl CpuIO for OLC6502 {
     }
 }
 
-impl AdressingModes for OLC6502{
-    fn IMP() -> u8{
+impl AddressingModes for OLC6502{
+    fn IMP(&self) -> u8{
         0u8
     }
-    fn IMM() -> u8{
+    fn IMM(&self) -> u8{
         0u8
     }
-    fn ZP0() -> u8{
+    fn ZP0(&self) -> u8{
         0u8
     }
-    fn ZPX() -> u8{
+    fn ZPX(&self) -> u8{
         0u8
     }
-    fn ZPY() -> u8{
+    fn ZPY(&self) -> u8{
         0u8
     }
-    fn REL() -> u8{
+    fn REL(&self) -> u8{
         0u8
     }
-    fn ABS() -> u8{
+    fn ABS(&self) -> u8{
         0u8
     }
-    fn ABX() -> u8{
+    fn ABX(&self) -> u8{
         0u8
     }
-    fn ABY() -> u8{
+    fn ABY(&self) -> u8{
         0u8
     }
-    fn IND() -> u8{
+    fn IND(&self) -> u8{
         0u8
     }
-    fn IZX() -> u8{
+    fn IZX(&self) -> u8{
         0u8
     }
-    fn IZY() -> u8{
+    fn IZY(&self) -> u8{
         0u8
     }
 }
 
-impl OpCodesCaller for INSTRUCTION {
-    fn apply(&self, cpu: &mut OLC6502) -> u8 {
-        match self.name.as_str() {
+impl InstructionFunctions for INSTRUCTION {
+    fn apply_op(&self, cpu: &mut OLC6502) -> u8 {
+        match self.opcode.as_str() {
             "ADC" => cpu.ADC(),
             "AND" => cpu.AND(),
             "ASL" => cpu.ASL(),
@@ -282,6 +289,23 @@ impl OpCodesCaller for INSTRUCTION {
             "TXS" => cpu.TXS(),
             "TYA" => cpu.TYA(),
             _ => cpu.XXX(), // Unintended operations
+        }
+    }
+    fn apply_addresing_mode(&self, cpu: &mut OLC6502) -> u8{
+        match self.addr_mode.as_str(){
+            "IMP" => cpu.IMP(),
+            "IMM" => cpu.IMM(),
+            "ZP0" => cpu.ZP0(),
+            "ZPX" => cpu.ZPX(),
+            "ZPY" => cpu.ZPY(),
+            "REL" => cpu.REL(),
+            "ABS" => cpu.ABS(),
+            "ABX" => cpu.ABX(),
+            "ABY" => cpu.ABY(),
+            "IND" => cpu.IND(),
+            "IZX" => cpu.IZX(),
+            "IZY" => cpu.IZY(),
+            _ => 0u8
         }
     }
 }
@@ -453,4 +477,67 @@ impl OperationCodes for OLC6502 {
     fn XXX(&self) -> u8 {
         0u8
     }
+}
+
+
+fn get_lookup_list() -> Vec<INSTRUCTION>{
+    vec![
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        INSTRUCTION {opcode:"BRK".to_string(),addr_mode:"IMM".to_string(), cycles : 1},
+        
+    ]
 }
