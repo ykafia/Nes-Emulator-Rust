@@ -3,7 +3,7 @@ use std::fs;
 use std::str::FromStr;
 
 
-/// This function generates a 16x16 vector for the lookup table of op codes
+/// This function generates a 16x16 vector for the lookup table of op codes by reading the instructions file
 pub fn get_lookup_list() -> Vec<Vec<INSTRUCTION>>{
     let data = fs::read_to_string("src/instructions.txt").expect("unable to read file");
     let data_lines = data.lines();
