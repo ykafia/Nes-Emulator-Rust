@@ -211,7 +211,7 @@ impl AddressingModes for OLC6502{
         0u8
     }
     fn ZP0(&mut self) -> u8{
-
+        
         0u8
     }
     fn ZPX(&mut self) -> u8{
