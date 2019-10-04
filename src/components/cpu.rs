@@ -85,7 +85,7 @@ pub trait CPUFunctions {
     fn reset(&mut self);
     fn interupt_req(&mut self);
     fn non_maskable_interupt_req(&mut self);
-    fn fetch_data(&mut self);
+    fn fetch_data(&mut self, bus: &mut Bus) -> u8;
 }
 pub trait CpuIO {
     fn read(&mut self, bus: &mut Bus, addr: u16, read_only: bool) -> u8;
@@ -121,60 +121,60 @@ pub trait AddressingModes {
 }
 
 pub trait OperationCodes {
-    fn ADC(&mut self) -> u8;
-    fn AND(&mut self) -> u8;
-    fn ASL(&mut self) -> u8;
-    fn BCC(&mut self) -> u8;
-    fn BCS(&mut self) -> u8;
-    fn BEQ(&mut self) -> u8;
-    fn BIT(&mut self) -> u8;
-    fn BMI(&mut self) -> u8;
-    fn BNE(&mut self) -> u8;
-    fn BPL(&mut self) -> u8;
-    fn BRK(&mut self) -> u8;
-    fn BVC(&mut self) -> u8;
-    fn BVS(&mut self) -> u8;
-    fn CLC(&mut self) -> u8;
-    fn CLD(&mut self) -> u8;
-    fn CLI(&mut self) -> u8;
-    fn CLV(&mut self) -> u8;
-    fn CMP(&mut self) -> u8;
-    fn CPX(&mut self) -> u8;
-    fn CPY(&mut self) -> u8;
-    fn DEC(&mut self) -> u8;
-    fn DEX(&mut self) -> u8;
-    fn DEY(&mut self) -> u8;
-    fn EOR(&mut self) -> u8;
-    fn INC(&mut self) -> u8;
-    fn INX(&mut self) -> u8;
-    fn INY(&mut self) -> u8;
-    fn JMP(&mut self) -> u8;
-    fn JSR(&mut self) -> u8;
-    fn LDA(&mut self) -> u8;
-    fn LDX(&mut self) -> u8;
-    fn NOP(&mut self) -> u8;
-    fn ORA(&mut self) -> u8;
-    fn PHA(&mut self) -> u8;
-    fn PHP(&mut self) -> u8;
-    fn PLA(&mut self) -> u8;
-    fn PLP(&mut self) -> u8;
-    fn ROL(&mut self) -> u8;
-    fn ROR(&mut self) -> u8;
-    fn RTI(&mut self) -> u8;
-    fn RTS(&mut self) -> u8;
-    fn SBC(&mut self) -> u8;
-    fn SEC(&mut self) -> u8;
-    fn SED(&mut self) -> u8;
-    fn SEI(&mut self) -> u8;
-    fn STA(&mut self) -> u8;
-    fn STX(&mut self) -> u8;
-    fn STY(&mut self) -> u8;
-    fn TAX(&mut self) -> u8;
-    fn TAY(&mut self) -> u8;
-    fn TSX(&mut self) -> u8;
-    fn TXA(&mut self) -> u8;
-    fn TXS(&mut self) -> u8;
-    fn TYA(&mut self) -> u8;
+    fn ADC(&mut self, bus : &mut Bus) -> u8;
+    fn AND(&mut self, bus : &mut Bus) -> u8;
+    fn ASL(&mut self, bus : &mut Bus) -> u8;
+    fn BCC(&mut self, bus : &mut Bus) -> u8;
+    fn BCS(&mut self, bus : &mut Bus) -> u8;
+    fn BEQ(&mut self, bus : &mut Bus) -> u8;
+    fn BIT(&mut self, bus : &mut Bus) -> u8;
+    fn BMI(&mut self, bus : &mut Bus) -> u8;
+    fn BNE(&mut self, bus : &mut Bus) -> u8;
+    fn BPL(&mut self, bus : &mut Bus) -> u8;
+    fn BRK(&mut self, bus : &mut Bus) -> u8;
+    fn BVC(&mut self, bus : &mut Bus) -> u8;
+    fn BVS(&mut self, bus : &mut Bus) -> u8;
+    fn CLC(&mut self, bus : &mut Bus) -> u8;
+    fn CLD(&mut self, bus : &mut Bus) -> u8;
+    fn CLI(&mut self, bus : &mut Bus) -> u8;
+    fn CLV(&mut self, bus : &mut Bus) -> u8;
+    fn CMP(&mut self, bus : &mut Bus) -> u8;
+    fn CPX(&mut self, bus : &mut Bus) -> u8;
+    fn CPY(&mut self, bus : &mut Bus) -> u8;
+    fn DEC(&mut self, bus : &mut Bus) -> u8;
+    fn DEX(&mut self, bus : &mut Bus) -> u8;
+    fn DEY(&mut self, bus : &mut Bus) -> u8;
+    fn EOR(&mut self, bus : &mut Bus) -> u8;
+    fn INC(&mut self, bus : &mut Bus) -> u8;
+    fn INX(&mut self, bus : &mut Bus) -> u8;
+    fn INY(&mut self, bus : &mut Bus) -> u8;
+    fn JMP(&mut self, bus : &mut Bus) -> u8;
+    fn JSR(&mut self, bus : &mut Bus) -> u8;
+    fn LDA(&mut self, bus : &mut Bus) -> u8;
+    fn LDX(&mut self, bus : &mut Bus) -> u8;
+    fn NOP(&mut self, bus : &mut Bus) -> u8;
+    fn ORA(&mut self, bus : &mut Bus) -> u8;
+    fn PHA(&mut self, bus : &mut Bus) -> u8;
+    fn PHP(&mut self, bus : &mut Bus) -> u8;
+    fn PLA(&mut self, bus : &mut Bus) -> u8;
+    fn PLP(&mut self, bus : &mut Bus) -> u8;
+    fn ROL(&mut self, bus : &mut Bus) -> u8;
+    fn ROR(&mut self, bus : &mut Bus) -> u8;
+    fn RTI(&mut self, bus : &mut Bus) -> u8;
+    fn RTS(&mut self, bus : &mut Bus) -> u8;
+    fn SBC(&mut self, bus : &mut Bus) -> u8;
+    fn SEC(&mut self, bus : &mut Bus) -> u8;
+    fn SED(&mut self, bus : &mut Bus) -> u8;
+    fn SEI(&mut self, bus : &mut Bus) -> u8;
+    fn STA(&mut self, bus : &mut Bus) -> u8;
+    fn STX(&mut self, bus : &mut Bus) -> u8;
+    fn STY(&mut self, bus : &mut Bus) -> u8;
+    fn TAX(&mut self, bus : &mut Bus) -> u8;
+    fn TAY(&mut self, bus : &mut Bus) -> u8;
+    fn TSX(&mut self, bus : &mut Bus) -> u8;
+    fn TXA(&mut self, bus : &mut Bus) -> u8;
+    fn TXS(&mut self, bus : &mut Bus) -> u8;
+    fn TYA(&mut self, bus : &mut Bus) -> u8;
 
     fn XXX(&mut self) -> u8; // Unintended operations
 }
@@ -331,60 +331,60 @@ impl AddressingModes for OLC6502 {
 impl CpuApplyFunctions for OLC6502 {
     fn apply_op(&mut self, instruction: INSTRUCTION, bus: &mut Bus) -> u8 {
         match instruction.opcode.as_str() {
-            "ADC" => self.ADC(),
-            "AND" => self.AND(),
-            "ASL" => self.ASL(),
-            "BCC" => self.BCC(),
-            "BCS" => self.BCS(),
-            "BEQ" => self.BEQ(),
-            "BIT" => self.BIT(),
-            "BMI" => self.BMI(),
-            "BNE" => self.BNE(),
-            "BPL" => self.BPL(),
-            "BRK" => self.BRK(),
-            "BVC" => self.BVC(),
-            "BVS" => self.BVS(),
-            "CLC" => self.CLC(),
-            "CLD" => self.CLD(),
-            "CLI" => self.CLI(),
-            "CLV" => self.CLV(),
-            "CMP" => self.CMP(),
-            "CPX" => self.CPX(),
-            "CPY" => self.CPY(),
-            "DEC" => self.DEC(),
-            "DEX" => self.DEX(),
-            "DEY" => self.DEY(),
-            "EOR" => self.EOR(),
-            "INC" => self.INC(),
-            "INX" => self.INX(),
-            "INY" => self.INY(),
-            "JMP" => self.JMP(),
-            "JSR" => self.JSR(),
-            "LDA" => self.LDA(),
-            "LDX" => self.LDX(),
-            "NOP" => self.NOP(),
-            "ORA" => self.ORA(),
-            "PHA" => self.PHA(),
-            "PHP" => self.PHP(),
-            "PLA" => self.PLA(),
-            "PLP" => self.PLP(),
-            "ROL" => self.ROL(),
-            "ROR" => self.ROR(),
-            "RTI" => self.RTI(),
-            "RTS" => self.RTS(),
-            "SBC" => self.SBC(),
-            "SEC" => self.SEC(),
-            "SED" => self.SED(),
-            "SEI" => self.SEI(),
-            "STA" => self.STA(),
-            "STX" => self.STX(),
-            "STY" => self.STY(),
-            "TAX" => self.TAX(),
-            "TAY" => self.TAY(),
-            "TSX" => self.TSX(),
-            "TXA" => self.TXA(),
-            "TXS" => self.TXS(),
-            "TYA" => self.TYA(),
+            "ADC" => self.ADC(bus),
+            "AND" => self.AND(bus),
+            "ASL" => self.ASL(bus),
+            "BCC" => self.BCC(bus),
+            "BCS" => self.BCS(bus),
+            "BEQ" => self.BEQ(bus),
+            "BIT" => self.BIT(bus),
+            "BMI" => self.BMI(bus),
+            "BNE" => self.BNE(bus),
+            "BPL" => self.BPL(bus),
+            "BRK" => self.BRK(bus),
+            "BVC" => self.BVC(bus),
+            "BVS" => self.BVS(bus),
+            "CLC" => self.CLC(bus),
+            "CLD" => self.CLD(bus),
+            "CLI" => self.CLI(bus),
+            "CLV" => self.CLV(bus),
+            "CMP" => self.CMP(bus),
+            "CPX" => self.CPX(bus),
+            "CPY" => self.CPY(bus),
+            "DEC" => self.DEC(bus),
+            "DEX" => self.DEX(bus),
+            "DEY" => self.DEY(bus),
+            "EOR" => self.EOR(bus),
+            "INC" => self.INC(bus),
+            "INX" => self.INX(bus),
+            "INY" => self.INY(bus),
+            "JMP" => self.JMP(bus),
+            "JSR" => self.JSR(bus),
+            "LDA" => self.LDA(bus),
+            "LDX" => self.LDX(bus),
+            "NOP" => self.NOP(bus),
+            "ORA" => self.ORA(bus),
+            "PHA" => self.PHA(bus),
+            "PHP" => self.PHP(bus),
+            "PLA" => self.PLA(bus),
+            "PLP" => self.PLP(bus),
+            "ROL" => self.ROL(bus),
+            "ROR" => self.ROR(bus),
+            "RTI" => self.RTI(bus),
+            "RTS" => self.RTS(bus),
+            "SBC" => self.SBC(bus),
+            "SEC" => self.SEC(bus),
+            "SED" => self.SED(bus),
+            "SEI" => self.SEI(bus),
+            "STA" => self.STA(bus),
+            "STX" => self.STX(bus),
+            "STY" => self.STY(bus),
+            "TAX" => self.TAX(bus),
+            "TAY" => self.TAY(bus),
+            "TSX" => self.TSX(bus),
+            "TXA" => self.TXA(bus),
+            "TXS" => self.TXS(bus),
+            "TYA" => self.TYA(bus),
             _ => self.XXX(), // Unintended operations
         }
     }
@@ -408,166 +408,167 @@ impl CpuApplyFunctions for OLC6502 {
 }
 
 impl OperationCodes for OLC6502 {
-    fn ADC(&mut self) -> u8 {
+    fn ADC(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn AND(&mut self) -> u8 {
+    fn AND(&mut self, bus : &mut Bus) -> u8 {
+        self.fetch_data(bus);
         0u8
     }
-    fn ASL(&mut self) -> u8 {
+    fn ASL(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn BCC(&mut self) -> u8 {
+    fn BCC(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn BCS(&mut self) -> u8 {
+    fn BCS(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn BEQ(&mut self) -> u8 {
+    fn BEQ(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn BIT(&mut self) -> u8 {
+    fn BIT(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn BMI(&mut self) -> u8 {
+    fn BMI(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn BNE(&mut self) -> u8 {
+    fn BNE(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn BPL(&mut self) -> u8 {
+    fn BPL(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn BRK(&mut self) -> u8 {
+    fn BRK(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn BVC(&mut self) -> u8 {
+    fn BVC(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn BVS(&mut self) -> u8 {
+    fn BVS(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn CLC(&mut self) -> u8 {
+    fn CLC(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn CLD(&mut self) -> u8 {
+    fn CLD(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn CLI(&mut self) -> u8 {
+    fn CLI(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn CLV(&mut self) -> u8 {
+    fn CLV(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn CMP(&mut self) -> u8 {
+    fn CMP(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn CPX(&mut self) -> u8 {
+    fn CPX(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn CPY(&mut self) -> u8 {
+    fn CPY(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn DEC(&mut self) -> u8 {
+    fn DEC(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn DEX(&mut self) -> u8 {
+    fn DEX(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn DEY(&mut self) -> u8 {
+    fn DEY(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn EOR(&mut self) -> u8 {
+    fn EOR(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn INC(&mut self) -> u8 {
+    fn INC(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn INX(&mut self) -> u8 {
+    fn INX(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn INY(&mut self) -> u8 {
+    fn INY(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn JMP(&mut self) -> u8 {
+    fn JMP(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn JSR(&mut self) -> u8 {
+    fn JSR(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn LDA(&mut self) -> u8 {
+    fn LDA(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn LDX(&mut self) -> u8 {
+    fn LDX(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn NOP(&mut self) -> u8 {
+    fn NOP(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn ORA(&mut self) -> u8 {
+    fn ORA(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn PHA(&mut self) -> u8 {
+    fn PHA(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn PHP(&mut self) -> u8 {
+    fn PHP(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn PLA(&mut self) -> u8 {
+    fn PLA(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn PLP(&mut self) -> u8 {
+    fn PLP(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn ROL(&mut self) -> u8 {
+    fn ROL(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn ROR(&mut self) -> u8 {
+    fn ROR(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn RTI(&mut self) -> u8 {
+    fn RTI(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn RTS(&mut self) -> u8 {
+    fn RTS(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn SBC(&mut self) -> u8 {
+    fn SBC(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn SEC(&mut self) -> u8 {
+    fn SEC(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn SED(&mut self) -> u8 {
+    fn SED(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn SEI(&mut self) -> u8 {
+    fn SEI(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn STA(&mut self) -> u8 {
+    fn STA(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn STX(&mut self) -> u8 {
+    fn STX(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn STY(&mut self) -> u8 {
+    fn STY(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn TAX(&mut self) -> u8 {
+    fn TAX(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn TAY(&mut self) -> u8 {
+    fn TAY(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn TSX(&mut self) -> u8 {
+    fn TSX(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn TXA(&mut self) -> u8 {
+    fn TXA(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn TXS(&mut self) -> u8 {
+    fn TXS(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
-    fn TYA(&mut self) -> u8 {
+    fn TYA(&mut self, bus : &mut Bus) -> u8 {
         0u8
     }
 
@@ -581,8 +582,6 @@ impl CPUFunctions for OLC6502 {
         if self.cycles == 0 {
             self.curr_opcode = self.read(bus, self.pc.try_into().unwrap(), true);
             self.pc += 1;
-            let high: usize = (self.curr_opcode | 0xF0 >> 4).try_into().unwrap();
-            let low: usize = (self.curr_opcode | 0x0F).try_into().unwrap();
             let additionnal_cycle_1 =
                 self.apply_op(self.lookup[self.curr_opcode as usize].clone(), bus);
             let additionnal_cycle_2 =
@@ -597,6 +596,11 @@ impl CPUFunctions for OLC6502 {
     fn set_flag(&mut self, f: FLAGS6502, v: bool) {}
     fn reset(&mut self) {}
     fn interupt_req(&mut self) {}
-    fn fetch_data(&mut self) {}
+    fn fetch_data(&mut self, bus : &mut Bus) -> u8{
+        if self.lookup[self.curr_opcode as usize].addr_mode == "IMP"{
+            self.fetched_data = self.read(bus,self.addr_abs,true);
+        }
+        self.fetched_data
+    }
     fn non_maskable_interupt_req(&mut self) {}
 }
