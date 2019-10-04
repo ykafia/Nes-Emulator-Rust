@@ -1143,7 +1143,7 @@ For example, if the instruction is "TST #$12,$3456,X", it is stored as: B3 12 56
 ***********************************************************************************************************************
 5         Alphabetic Opcode Listing
 
-Each code will have a C-style psuedo code snip, and a verbal description of the opcodes.
+Each code will have a C-style pseudo code snip, and a verbal description of the opcodes.
   The code style one assumes the following values:
     A      Accumulator (in 8bit or 16bit)
     Al     65c816- Specifically the lower byte of the accumulator
