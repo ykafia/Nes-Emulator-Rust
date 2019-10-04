@@ -42,7 +42,7 @@ pub struct OLC6502 {
     /// number of cycles left for the current opcode to finish
     pub cycles: u8,
 
-    pub lookup: Vec<Vec<INSTRUCTION>>,
+    pub lookup: Vec<INSTRUCTION>,
 }
 /// enum representing the various instruction flags
 pub enum FLAGS6502 {
@@ -105,19 +105,19 @@ pub trait AddressingModes {
     /// Zero Page Y : Adds only the second byte to the index range, faster adress accessing like ZP0    
     fn ZPY(&mut self, bus: &mut Bus) -> u8;
     /// Relative : Used only for branch instructions and establish destination for the conditinal branch  
-    fn REL(&mut self) -> u8;
+    fn REL(&mut self, bus: &mut Bus) -> u8;
     /// Absolute : Second byte specifies the eight low order bits of the effective address while the third byte gives the high order bits. Thus making it possible to adress a wallopin 64K bytes of data
-    fn ABS(&mut self) -> u8;
+    fn ABS(&mut self, bus: &mut Bus) -> u8;
     /// Absolute X : Used with the X register
-    fn ABX(&mut self) -> u8;
+    fn ABX(&mut self, bus: &mut Bus) -> u8;
     /// Absolute Y : Used with the Y register
-    fn ABY(&mut self) -> u8;
+    fn ABY(&mut self, bus: &mut Bus) -> u8;
     /// Absolute Indirect : Second byte gives the low order byte of the memory location, high order in third byte.
-    fn IND(&mut self) -> u8;
+    fn IND(&mut self, bus: &mut Bus) -> u8;
     /// Indirect indexed X : Indirect mode with use of the X register
-    fn IZX(&mut self) -> u8;
+    fn IZX(&mut self, bus: &mut Bus) -> u8;
     /// Indirect indexed Y : Indirect mode with use of the Y register
-    fn IZY(&mut self) -> u8;
+    fn IZY(&mut self, bus: &mut Bus) -> u8;
 }
 
 pub trait OperationCodes {
@@ -240,25 +240,90 @@ impl AddressingModes for OLC6502 {
         self.addr_abs &= 0x00FF;
         0u8
     }
-    fn REL(&mut self) -> u8 {
+
+    fn ABS(&mut self, bus: &mut Bus) -> u8 {
+        let lo: u16 = self.read(bus, self.pc, true).into();
+        self.pc += 1;
+        let hi: u16 = self.read(bus, self.pc, true).into();
+        self.pc += 1;
+        self.addr_abs = (hi << 8) | lo;
         0u8
     }
-    fn ABS(&mut self) -> u8 {
+    fn ABX(&mut self, bus: &mut Bus) -> u8 {
+        let lo: u16 = self.read(bus, self.pc, true).into();
+        self.pc += 1;
+        let hi: u16 = self.read(bus, self.pc, true).into();
+        //self.addr_abs = (((hi<<8) | lo) + (self.x as u16)).into();
+        self.addr_abs = (hi << 8) | lo;
+        self.addr_abs += self.x as u16;
+
+        match self.addr_abs | 0xFF00 != hi {
+            false => 0u8,
+            true => 1u8,
+        }
+    }
+    fn ABY(&mut self, bus: &mut Bus) -> u8 {
+        let lo: u16 = self.read(bus, self.pc, true).into();
+        self.pc += 1;
+        let hi: u16 = self.read(bus, self.pc, true).into();
+
+        self.addr_abs = (hi << 8) | lo;
+        self.addr_abs += self.y as u16;
+
+        match self.addr_abs | 0xFF00 != hi {
+            false => 0u8,
+            true => 1u8,
+        }
+    }
+    fn IND(&mut self, bus: &mut Bus) -> u8 {
+        let ptr_lo: u16 = self.read(bus, self.pc, true).into();
+        self.pc += 1;
+        let ptr_hi: u16 = self.read(bus, self.pc, true).into();
+        self.pc += 1;
+        let ptr = (ptr_hi << 8) | ptr_lo;
+        self.addr_abs = match ptr_lo == 0x00FF {
+            true => {
+                ((self.read(bus, ptr & 0xFF00, true) as u16) << 8)
+                    | self.read(bus, ptr, true) as u16
+            }
+            false => {
+                ((self.read(bus, ptr + 1, true) as u16) << 8) | self.read(bus, ptr, true) as u16
+            }
+        };
         0u8
     }
-    fn ABX(&mut self) -> u8 {
+    fn IZX(&mut self, bus: &mut Bus) -> u8 {
+        let t: u16 = self.read(bus, self.pc, true).into();
+        self.pc += 1;
+
+        let lo: u16 = self.read(bus, (t + (self.x as u16)) & 0x00FF, true).into();
+        let hi: u16 = self
+            .read(bus, (t + ((self.x + 1) as u16)) & 0x00FF, true)
+            .into();
+        self.addr_abs = (hi << 8) | lo as u16;
+
         0u8
     }
-    fn ABY(&mut self) -> u8 {
-        0u8
+    fn IZY(&mut self, bus: &mut Bus) -> u8 {
+        let t: u16 = self.read(bus, self.pc, true).into();
+        self.pc += 1;
+
+        let lo: u16 = self.read(bus, t & 0x00FF, true).into();
+        let hi: u16 = self.read(bus, (t + 1) & 0x00FF, true).into();
+        self.addr_abs = ((hi << 8) | lo) + self.y as u16;
+
+        match self.addr_abs & 0xFF00 != hi {
+            false => 1u8,
+            true => 0u8,
+        }
     }
-    fn IND(&mut self) -> u8 {
-        0u8
-    }
-    fn IZX(&mut self) -> u8 {
-        0u8
-    }
-    fn IZY(&mut self) -> u8 {
+    fn REL(&mut self, bus: &mut Bus) -> u8 {
+        self.addr_rel = self.read(bus, self.pc, true).into();
+        self.pc += 1;
+        if self.addr_rel & 0x80 != 0 {
+            self.addr_rel |= 0xFF00;
+        }
+
         0u8
     }
 }
@@ -330,13 +395,13 @@ impl CpuApplyFunctions for OLC6502 {
             "ZP0" => self.ZP0(),
             "ZPX" => self.ZPX(bus),
             "ZPY" => self.ZPY(bus),
-            "REL" => self.REL(),
-            "ABS" => self.ABS(),
-            "ABX" => self.ABX(),
-            "ABY" => self.ABY(),
-            "IND" => self.IND(),
-            "IZX" => self.IZX(),
-            "IZY" => self.IZY(),
+            "REL" => self.REL(bus),
+            "ABS" => self.ABS(bus),
+            "ABX" => self.ABX(bus),
+            "ABY" => self.ABY(bus),
+            "IND" => self.IND(bus),
+            "IZX" => self.IZX(bus),
+            "IZY" => self.IZY(bus),
             _ => 0u8,
         }
     }
@@ -518,9 +583,10 @@ impl CPUFunctions for OLC6502 {
             self.pc += 1;
             let high: usize = (self.curr_opcode | 0xF0 >> 4).try_into().unwrap();
             let low: usize = (self.curr_opcode | 0x0F).try_into().unwrap();
-            let additionnal_cycle_1 = self.apply_op(self.lookup[low][high].clone(), bus);
+            let additionnal_cycle_1 =
+                self.apply_op(self.lookup[self.curr_opcode as usize].clone(), bus);
             let additionnal_cycle_2 =
-                self.apply_addressing_mode(self.lookup[low][high].clone(), bus);
+                self.apply_addressing_mode(self.lookup[self.curr_opcode as usize].clone(), bus);
             self.cycles += additionnal_cycle_1 & additionnal_cycle_2;
         }
         self.cycles -= 1;
