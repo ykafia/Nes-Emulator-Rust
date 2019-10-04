@@ -8,17 +8,39 @@ use std::convert::TryInto;
 
 /// Struct representing the 6502 cpu's data
 pub struct OLC6502{
+    /// Accumulator :
+    /// A is byte-wide and along with the arithmetic logic unit (ALU), 
+    /// supports using the status register for carrying, 
+    /// overflow detection, and so on.
     pub a: u8,
+    /// Indexes X & Y
     pub x: u8,
     pub y: u8,
+    /// Stack Pointer
+    /// S is byte-wide and can be accessed using interrupts, 
+    /// pulls, pushes, and transfers.
     pub stkp: u8,
+    /// Program Counter : 
+    /// The 2-byte program counter PC supports 65536 direct (unbanked) memory
+    /// locations, however not all values are sent to the cartridge.
+    /// It can be accessed either by allowing CPU's internal fetch logic
+    /// increment the address bus, an interrupt (NMI, Reset, IRQ/BRQ), 
+    /// and using the RTS/JMP/JSR/Branch instructions.
     pub pc: u16,
+    /// Status Register :
+    /// P has 6 bits used by the ALU but is byte-wide. 
+    /// PHP, PLP, arithmetic, testing, and branch instructions can access this register.
     pub status: u8,
-    pub fetched_data: u8,      // Data that can be fetched for some operations when needed
-    pub addr_abs: u16, // Absolute Adress to another data source needed
+    /// Data that can be fetched for some operations when needed
+    pub fetched_data: u8, 
+    /// Absolute Adress to another data source needed
+    pub addr_abs: u16, 
+    /// Relative Adress to another data source needed
     pub addr_rel: u16,
-    pub curr_opcode: u8, // Opcode currently running
-    pub cycles: u8, // number of cycles left for the current opcode to finish
+    /// Opcode currently running
+    pub curr_opcode: u8, 
+    /// number of cycles left for the current opcode to finish
+    pub cycles: u8, 
 
     pub lookup: Vec<Vec<INSTRUCTION>>      
 }
@@ -82,9 +104,9 @@ pub trait AddressingModes {
     /// Zero Page : fetching only the second byte knowing the first one is zero. It looks for the 1st element in the instruction matrix. Performance
     fn ZP0(&mut self) -> u8;
     /// Zero Page X : Adds only the second byte to the index range, faster adress accessing like ZP0    
-    fn ZPX(&mut self) -> u8;
+    fn ZPX(&mut self, bus : &mut Bus) -> u8;
     /// Zero Page Y : Adds only the second byte to the index range, faster adress accessing like ZP0    
-    fn ZPY(&mut self) -> u8;
+    fn ZPY(&mut self, bus : &mut Bus) -> u8;
     /// Relative : Used only for branch instructions and establish destination for the conditinal branch  
     fn REL(&mut self) -> u8;
     /// Absolute : Second byte specifies the eight low order bits of the effective address while the third byte gives the high order bits. Thus making it possible to adress a wallopin 64K bytes of data
@@ -211,13 +233,21 @@ impl AddressingModes for OLC6502{
         0u8
     }
     fn ZP0(&mut self) -> u8{
-        
+        self.addr_abs = self.pc;
+        self.pc += 1;
+        self.addr_abs &= 0x00FF;   
         0u8
     }
-    fn ZPX(&mut self) -> u8{
+    fn ZPX(&mut self, bus : &mut Bus) -> u8{
+        self.addr_abs = (self.read(bus,self.pc,true) + self.x).into();
+        self.pc += 1;
+        self.addr_abs &= 0x00FF;
         0u8
     }
-    fn ZPY(&mut self) -> u8{
+    fn ZPY(&mut self, bus : &mut Bus) -> u8{
+        self.addr_abs = (self.read(bus,self.pc,true)+self.y).into();
+        self.pc +=1;
+        self.addr_abs &= 0x00FF;
         0u8
     }
     fn REL(&mut self) -> u8{
@@ -304,7 +334,7 @@ impl CpuApplyFunctions for OLC6502 {
             _ => self.XXX(), // Unintended operations
         }
     }
-    fn apply_addressing_mode(&mut self, instruction : INSTRUCTION) -> u8{
+    fn apply_addressing_mode(&mut self, instruction : INSTRUCTIO) -> u8{
         match instruction.addr_mode.as_str(){
             "IMP" => self.IMP(),
             "IMM" => self.IMM(),
