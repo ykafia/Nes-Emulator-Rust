@@ -47,21 +47,21 @@ pub struct OLC6502 {
 /// enum representing the various instruction flags
 pub enum FLAGS6502 {
     /// Carry bit
-    C = 1 << 0, 
+    C = 1 << 0,
     /// Zero
-    Z = 1 << 1, 
+    Z = 1 << 1,
     /// Disable interrupts
-    I = 1 << 2, 
+    I = 1 << 2,
     /// Decimal mode
-    D = 1 << 3, 
+    D = 1 << 3,
     /// Break
-    B = 1 << 4, 
+    B = 1 << 4,
     /// Unused
-    U = 1 << 5, 
+    U = 1 << 5,
     /// Overfow
-    V = 1 << 6, 
+    V = 1 << 6,
     /// Negative
-    N = 1 << 7, 
+    N = 1 << 7,
 }
 
 /// A struct representing instructions by name and corresponding function.
@@ -91,9 +91,9 @@ pub trait CPUFunctions {
     /// Clock management function
     /// This should control the number of clock cycles each instructions takes.
     fn clock(&mut self, bus: &mut Bus);
-    fn reset(&mut self, bus : &mut Bus);
-    fn interupt_req(&mut self, bus : &mut Bus);
-    fn non_maskable_interupt_req(&mut self, bus : &mut Bus);
+    fn reset(&mut self, bus: &mut Bus);
+    fn interupt_req(&mut self, bus: &mut Bus);
+    fn non_maskable_interupt_req(&mut self, bus: &mut Bus);
     fn fetch_data(&mut self, bus: &mut Bus) -> u8;
 }
 pub trait CpuIO {
@@ -419,21 +419,22 @@ impl CpuApplyFunctions for OLC6502 {
 impl OperationCodes for OLC6502 {
     fn ADC(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
-        let tmp :u16= (self.a + self.fetched_data + FLAGS6502::C as u8) as u16 ;
-        self.set_flag(FLAGS6502::C, tmp>255);
-        self.set_flag(FLAGS6502::Z, tmp&0x00FF == 0);
-        self.set_flag(FLAGS6502::N, tmp&0x80 == 1);
-        self.set_flag(FLAGS6502::V, 
-            !(self.a ^self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 !=0
+        let tmp: u16 = (self.a + self.fetched_data + FLAGS6502::C as u8) as u16;
+        self.set_flag(FLAGS6502::C, tmp > 255);
+        self.set_flag(FLAGS6502::Z, tmp & 0x00FF == 0);
+        self.set_flag(FLAGS6502::N, tmp & 0x80 == 1);
+        self.set_flag(
+            FLAGS6502::V,
+            !(self.a ^ self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 != 0,
         );
         self.a = (tmp & 0x00FF) as u8;
-        1u8 
+        1u8
     }
     fn AND(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
         self.a = self.a & self.fetched_data;
-        self.set_flag(FLAGS6502::Z, self.a==0x00);
-        self.set_flag(FLAGS6502::N, (self.a & 0x80)!=0);
+        self.set_flag(FLAGS6502::Z, self.a == 0x00);
+        self.set_flag(FLAGS6502::N, (self.a & 0x80) != 0);
         1u8
     }
     fn ASL(&mut self, bus: &mut Bus) -> u8 {
@@ -441,10 +442,10 @@ impl OperationCodes for OLC6502 {
     }
     fn BCC(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::C) == 0 {
-            self.cycles+=1;
+            self.cycles += 1;
             self.addr_abs = self.pc + self.addr_rel;
             if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
-                self.cycles+=1;
+                self.cycles += 1;
             }
             self.pc = self.addr_abs;
         }
@@ -452,10 +453,10 @@ impl OperationCodes for OLC6502 {
     }
     fn BCS(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::C) == 1 {
-            self.cycles+=1;
+            self.cycles += 1;
             self.addr_abs = self.pc + self.addr_rel;
             if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
-                self.cycles+=1;
+                self.cycles += 1;
             }
             self.pc = self.addr_abs;
         }
@@ -463,10 +464,10 @@ impl OperationCodes for OLC6502 {
     }
     fn BEQ(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::Z) == 1 {
-            self.cycles+=1;
+            self.cycles += 1;
             self.addr_abs = self.pc + self.addr_rel;
             if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
-                self.cycles+=1;
+                self.cycles += 1;
             }
             self.pc = self.addr_abs;
         }
@@ -477,10 +478,10 @@ impl OperationCodes for OLC6502 {
     }
     fn BMI(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::N) == 1 {
-            self.cycles+=1;
+            self.cycles += 1;
             self.addr_abs = self.pc + self.addr_rel;
             if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
-                self.cycles+=1;
+                self.cycles += 1;
             }
             self.pc = self.addr_abs;
         }
@@ -488,10 +489,10 @@ impl OperationCodes for OLC6502 {
     }
     fn BNE(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::Z) == 0 {
-            self.cycles+=1;
+            self.cycles += 1;
             self.addr_abs = self.pc + self.addr_rel;
             if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
-                self.cycles+=1;
+                self.cycles += 1;
             }
             self.pc = self.addr_abs;
         }
@@ -499,24 +500,41 @@ impl OperationCodes for OLC6502 {
     }
     fn BPL(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::N) == 0 {
-            self.cycles+=1;
+            self.cycles += 1;
             self.addr_abs = self.pc + self.addr_rel;
             if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
-                self.cycles+=1;
+                self.cycles += 1;
             }
             self.pc = self.addr_abs;
         }
         0u8
     }
     fn BRK(&mut self, bus: &mut Bus) -> u8 {
+        self.set_flag(FLAGS6502::B, true);
+        self.stkp += 1;
+        self.write(
+            bus,
+            0x0100 + self.stkp as u16,
+            (self.pc >> 8 & 0x00FF) as u8,
+        );
+        self.stkp += 1;
+        self.write(bus, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
+        self.stkp += 1;
+        self.write(bus, 0x0100 + self.stkp as u16, self.status);
+        self.addr_abs = 0xFFFE;
+        let lo = self.read(bus, self.addr_abs + 0, true) as u16;
+        let hi = self.read(bus, self.addr_abs + 1, true) as u16;
+        self.pc = hi << 8 | lo;
+        self.set_flag(FLAGS6502::B, true);
+
         0u8
     }
     fn BVC(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::V) == 0 {
-            self.cycles+=1;
+            self.cycles += 1;
             self.addr_abs = self.pc + self.addr_rel;
             if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
-                self.cycles+=1;
+                self.cycles += 1;
             }
             self.pc = self.addr_abs;
         }
@@ -524,10 +542,10 @@ impl OperationCodes for OLC6502 {
     }
     fn BVS(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::V) == 1 {
-            self.cycles+=1;
+            self.cycles += 1;
             self.addr_abs = self.pc + self.addr_rel;
             if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
-                self.cycles+=1;
+                self.cycles += 1;
             }
             self.pc = self.addr_abs;
         }
@@ -604,9 +622,9 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     fn PLA(&mut self, bus: &mut Bus) -> u8 {
-        self.stkp+=1;
+        self.stkp += 1;
         self.a = self.read(bus, 0x0100 + self.stkp as u16, true);
-        self.set_flag(FLAGS6502::Z, self.a==0);
+        self.set_flag(FLAGS6502::Z, self.a == 0);
         self.set_flag(FLAGS6502::N, self.a & 0x80 != 0);
         0u8
     }
@@ -620,11 +638,11 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     fn RTI(&mut self, bus: &mut Bus) -> u8 {
-        self.stkp +=1;
+        self.stkp += 1;
         self.status = self.read(bus, 0x0100 + self.stkp as u16, true);
         self.status &= !(FLAGS6502::B as u8);
         self.status &= !(FLAGS6502::U as u8);
-        self.stkp+=1;
+        self.stkp += 1;
         self.pc = self.read(bus, 0x0100 + self.stkp as u16, true) as u16;
         self.stkp += 1;
         self.pc |= (self.read(bus, 0x0100 + self.stkp as u16, true) as u16) << 8;
@@ -637,12 +655,13 @@ impl OperationCodes for OLC6502 {
         self.fetch_data(bus);
         let value = self.fetched_data ^ 0x00FF;
 
-        let tmp :u16= (self.a + value + FLAGS6502::C as u8) as u16 ;
-        self.set_flag(FLAGS6502::C, tmp>255);
-        self.set_flag(FLAGS6502::Z, tmp&0x00FF == 0);
-        self.set_flag(FLAGS6502::N, tmp&0x80 == 1);
-        self.set_flag(FLAGS6502::V, 
-            !(self.a ^self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 !=0
+        let tmp: u16 = (self.a + value + FLAGS6502::C as u8) as u16;
+        self.set_flag(FLAGS6502::C, tmp > 255);
+        self.set_flag(FLAGS6502::Z, tmp & 0x00FF == 0);
+        self.set_flag(FLAGS6502::N, tmp & 0x80 == 1);
+        self.set_flag(
+            FLAGS6502::V,
+            !(self.a ^ self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 != 0,
         );
         self.a = (tmp & 0x00FF) as u8;
         0u8
@@ -703,10 +722,18 @@ impl CPUFunctions for OLC6502 {
         self.cycles -= 1;
     }
     fn get_flag(&mut self, f: FLAGS6502) -> u8 {
-        0u8
+        match (self.status & f as u8) > 0 {
+            true => 1,
+            false => 0,
+        }
     }
-    fn set_flag(&mut self, f: FLAGS6502, v: bool) {}
-    fn reset(&mut self, bus : &mut Bus) {
+    fn set_flag(&mut self, f: FLAGS6502, v: bool) {
+        match v {
+            true => self.status |= f as u8,
+            false => self.status &= !(f as u8),
+        }
+    }
+    fn reset(&mut self, bus: &mut Bus) {
         self.a = 0;
         self.x = 0;
         self.y = 0;
@@ -714,29 +741,32 @@ impl CPUFunctions for OLC6502 {
         self.status = 0x00 | FLAGS6502::U as u8;
         self.addr_abs = 0xFFFC;
         let lo = self.read(bus, self.addr_abs, true) as u16;
-        let hi = self.read(bus,self.addr_abs+1,true) as u16;
-        self.pc = (hi<<8) | lo;
+        let hi = self.read(bus, self.addr_abs + 1, true) as u16;
+        self.pc = (hi << 8) | lo;
         self.addr_abs = 0;
         self.addr_rel = 0;
         self.fetched_data = 0;
         self.cycles = 8;
-
     }
-    fn interupt_req(&mut self, bus : &mut Bus) {
-        if self.get_flag(FLAGS6502::I)!= 0{
-            self.write(bus,0x0100+self.stkp as u16,((self.pc>>8) & 0x00FF) as u8);
+    fn interupt_req(&mut self, bus: &mut Bus) {
+        if self.get_flag(FLAGS6502::I) != 0 {
+            self.write(
+                bus,
+                0x0100 + self.stkp as u16,
+                ((self.pc >> 8) & 0x00FF) as u8,
+            );
             self.stkp -= 1;
-            self.write(bus,0x0100+self.stkp as u16,(self.pc & 0x00FF) as u8);
+            self.write(bus, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
             self.stkp -= 1;
             self.set_flag(FLAGS6502::B, false);
             self.set_flag(FLAGS6502::U, true);
             self.set_flag(FLAGS6502::I, true);
             self.write(bus, 0x0100 + self.stkp as u16, self.status);
-            self.stkp -=1;
+            self.stkp -= 1;
             self.addr_abs = 0xFFFE;
-            let lo = self.read(bus, self.addr_abs+0, true) as u16;
-            let hi = self.read(bus, self.addr_abs+1, true) as u16;
-            self.pc = hi<<8 | lo;
+            let lo = self.read(bus, self.addr_abs + 0, true) as u16;
+            let hi = self.read(bus, self.addr_abs + 1, true) as u16;
+            self.pc = hi << 8 | lo;
             self.cycles = 7;
         }
     }
@@ -746,20 +776,24 @@ impl CPUFunctions for OLC6502 {
         }
         self.fetched_data
     }
-    fn non_maskable_interupt_req(&mut self, bus : &mut Bus) {
-        self.write(bus,0x0100+self.stkp as u16,((self.pc>>8) & 0x00FF) as u8);
+    fn non_maskable_interupt_req(&mut self, bus: &mut Bus) {
+        self.write(
+            bus,
+            0x0100 + self.stkp as u16,
+            ((self.pc >> 8) & 0x00FF) as u8,
+        );
         self.stkp -= 1;
-        self.write(bus,0x0100+self.stkp as u16,(self.pc & 0x00FF) as u8);
+        self.write(bus, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
         self.stkp -= 1;
         self.set_flag(FLAGS6502::B, false);
         self.set_flag(FLAGS6502::U, true);
         self.set_flag(FLAGS6502::I, true);
         self.write(bus, 0x0100 + self.stkp as u16, self.status);
-        self.stkp -=1;
+        self.stkp -= 1;
         self.addr_abs = 0xFFFA;
-        let lo = self.read(bus, self.addr_abs+0, true) as u16;
-        let hi = self.read(bus, self.addr_abs+1, true) as u16;
-        self.pc = hi<<8 | lo;
+        let lo = self.read(bus, self.addr_abs + 0, true) as u16;
+        let hi = self.read(bus, self.addr_abs + 1, true) as u16;
+        self.pc = hi << 8 | lo;
         self.cycles = 8;
     }
 }
