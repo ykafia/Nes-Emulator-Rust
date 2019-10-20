@@ -4,7 +4,7 @@ use super::bus::*;
 use super::instruction_generator::get_lookup_list;
 use std::convert::TryInto;
 
-//use ndarray::Array2;
+//TODO: Implement the rest of the cpu instructions
 
 /// Struct representing the 6502 cpu's data
 pub struct OLC6502 {
@@ -90,10 +90,10 @@ pub trait CPUFunctions {
 
     /// Clock management function
     /// This should control the number of clock cycles each instructions takes.
-    fn clock(&mut self, but: &mut Bus);
-    fn reset(&mut self);
-    fn interupt_req(&mut self);
-    fn non_maskable_interupt_req(&mut self);
+    fn clock(&mut self, bus: &mut Bus);
+    fn reset(&mut self, bus : &mut Bus);
+    fn interupt_req(&mut self, bus : &mut Bus);
+    fn non_maskable_interupt_req(&mut self, bus : &mut Bus);
     fn fetch_data(&mut self, bus: &mut Bus) -> u8;
 }
 pub trait CpuIO {
@@ -423,7 +423,11 @@ impl OperationCodes for OLC6502 {
         self.set_flag(FLAGS6502::C, tmp>255);
         self.set_flag(FLAGS6502::Z, tmp&0x00FF == 0);
         self.set_flag(FLAGS6502::N, tmp&0x80 == 1);
-        0u8
+        self.set_flag(FLAGS6502::V, 
+            !(self.a ^self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 !=0
+        );
+        self.a = (tmp & 0x00FF) as u8;
+        1u8 
     }
     fn AND(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
@@ -592,12 +596,18 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     fn PHA(&mut self, bus: &mut Bus) -> u8 {
+        self.write(bus, 0x0100 + self.stkp as u16, self.a);
+        self.stkp -= 1;
         0u8
     }
     fn PHP(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
     fn PLA(&mut self, bus: &mut Bus) -> u8 {
+        self.stkp+=1;
+        self.a = self.read(bus, 0x0100 + self.stkp as u16, true);
+        self.set_flag(FLAGS6502::Z, self.a==0);
+        self.set_flag(FLAGS6502::N, self.a & 0x80 != 0);
         0u8
     }
     fn PLP(&mut self, bus: &mut Bus) -> u8 {
@@ -610,12 +620,31 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     fn RTI(&mut self, bus: &mut Bus) -> u8 {
+        self.stkp +=1;
+        self.status = self.read(bus, 0x0100 + self.stkp as u16, true);
+        self.status &= !(FLAGS6502::B as u8);
+        self.status &= !(FLAGS6502::U as u8);
+        self.stkp+=1;
+        self.pc = self.read(bus, 0x0100 + self.stkp as u16, true) as u16;
+        self.stkp += 1;
+        self.pc |= (self.read(bus, 0x0100 + self.stkp as u16, true) as u16) << 8;
         0u8
     }
     fn RTS(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
     fn SBC(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        let value = self.fetched_data ^ 0x00FF;
+
+        let tmp :u16= (self.a + value + FLAGS6502::C as u8) as u16 ;
+        self.set_flag(FLAGS6502::C, tmp>255);
+        self.set_flag(FLAGS6502::Z, tmp&0x00FF == 0);
+        self.set_flag(FLAGS6502::N, tmp&0x80 == 1);
+        self.set_flag(FLAGS6502::V, 
+            !(self.a ^self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 !=0
+        );
+        self.a = (tmp & 0x00FF) as u8;
         0u8
     }
     fn SEC(&mut self, bus: &mut Bus) -> u8 {
@@ -677,13 +706,60 @@ impl CPUFunctions for OLC6502 {
         0u8
     }
     fn set_flag(&mut self, f: FLAGS6502, v: bool) {}
-    fn reset(&mut self) {}
-    fn interupt_req(&mut self) {}
+    fn reset(&mut self, bus : &mut Bus) {
+        self.a = 0;
+        self.x = 0;
+        self.y = 0;
+        self.stkp = 0xFD;
+        self.status = 0x00 | FLAGS6502::U as u8;
+        self.addr_abs = 0xFFFC;
+        let lo = self.read(bus, self.addr_abs, true) as u16;
+        let hi = self.read(bus,self.addr_abs+1,true) as u16;
+        self.pc = (hi<<8) | lo;
+        self.addr_abs = 0;
+        self.addr_rel = 0;
+        self.fetched_data = 0;
+        self.cycles = 8;
+
+    }
+    fn interupt_req(&mut self, bus : &mut Bus) {
+        if self.get_flag(FLAGS6502::I)!= 0{
+            self.write(bus,0x0100+self.stkp as u16,((self.pc>>8) & 0x00FF) as u8);
+            self.stkp -= 1;
+            self.write(bus,0x0100+self.stkp as u16,(self.pc & 0x00FF) as u8);
+            self.stkp -= 1;
+            self.set_flag(FLAGS6502::B, false);
+            self.set_flag(FLAGS6502::U, true);
+            self.set_flag(FLAGS6502::I, true);
+            self.write(bus, 0x0100 + self.stkp as u16, self.status);
+            self.stkp -=1;
+            self.addr_abs = 0xFFFE;
+            let lo = self.read(bus, self.addr_abs+0, true) as u16;
+            let hi = self.read(bus, self.addr_abs+1, true) as u16;
+            self.pc = hi<<8 | lo;
+            self.cycles = 7;
+        }
+    }
     fn fetch_data(&mut self, bus: &mut Bus) -> u8 {
         if self.lookup[self.curr_opcode as usize].addr_mode == "IMP" {
             self.fetched_data = self.read(bus, self.addr_abs, true);
         }
         self.fetched_data
     }
-    fn non_maskable_interupt_req(&mut self) {}
+    fn non_maskable_interupt_req(&mut self, bus : &mut Bus) {
+        self.write(bus,0x0100+self.stkp as u16,((self.pc>>8) & 0x00FF) as u8);
+        self.stkp -= 1;
+        self.write(bus,0x0100+self.stkp as u16,(self.pc & 0x00FF) as u8);
+        self.stkp -= 1;
+        self.set_flag(FLAGS6502::B, false);
+        self.set_flag(FLAGS6502::U, true);
+        self.set_flag(FLAGS6502::I, true);
+        self.write(bus, 0x0100 + self.stkp as u16, self.status);
+        self.stkp -=1;
+        self.addr_abs = 0xFFFA;
+        let lo = self.read(bus, self.addr_abs+0, true) as u16;
+        let hi = self.read(bus, self.addr_abs+1, true) as u16;
+        self.pc = hi<<8 | lo;
+        self.cycles = 8;
+    }
 }
