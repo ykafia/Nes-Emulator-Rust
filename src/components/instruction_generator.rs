@@ -2,7 +2,6 @@ use super::cpu::*;
 use std::fs;
 use std::str::FromStr;
 
-
 pub fn get_lookup_list() -> Vec<INSTRUCTION> {
     let data = fs::read_to_string("src/instructions.txt").expect("unable to read file");
     let data_lines = data.lines();

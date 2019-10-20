@@ -46,15 +46,24 @@ pub struct OLC6502 {
 }
 /// enum representing the various instruction flags
 pub enum FLAGS6502 {
-    C = 1 << 0, // Carry bit
-    Z = 1 << 1, // Zero
-    I = 1 << 2, // Disable interrupts
-    D = 1 << 3, // Decimal mode
-    B = 1 << 4, // Break
-    U = 1 << 5, // Unused
-    V = 1 << 6, // Overfow
-    N = 1 << 7, // Negative
+    /// Carry bit
+    C = 1 << 0, 
+    /// Zero
+    Z = 1 << 1, 
+    /// Disable interrupts
+    I = 1 << 2, 
+    /// Decimal mode
+    D = 1 << 3, 
+    /// Break
+    B = 1 << 4, 
+    /// Unused
+    U = 1 << 5, 
+    /// Overfow
+    V = 1 << 6, 
+    /// Negative
+    N = 1 << 7, 
 }
+
 /// A struct representing instructions by name and corresponding function.
 
 #[derive(Clone)]
@@ -121,60 +130,60 @@ pub trait AddressingModes {
 }
 
 pub trait OperationCodes {
-    fn ADC(&mut self, bus : &mut Bus) -> u8;
-    fn AND(&mut self, bus : &mut Bus) -> u8;
-    fn ASL(&mut self, bus : &mut Bus) -> u8;
-    fn BCC(&mut self, bus : &mut Bus) -> u8;
-    fn BCS(&mut self, bus : &mut Bus) -> u8;
-    fn BEQ(&mut self, bus : &mut Bus) -> u8;
-    fn BIT(&mut self, bus : &mut Bus) -> u8;
-    fn BMI(&mut self, bus : &mut Bus) -> u8;
-    fn BNE(&mut self, bus : &mut Bus) -> u8;
-    fn BPL(&mut self, bus : &mut Bus) -> u8;
-    fn BRK(&mut self, bus : &mut Bus) -> u8;
-    fn BVC(&mut self, bus : &mut Bus) -> u8;
-    fn BVS(&mut self, bus : &mut Bus) -> u8;
-    fn CLC(&mut self, bus : &mut Bus) -> u8;
-    fn CLD(&mut self, bus : &mut Bus) -> u8;
-    fn CLI(&mut self, bus : &mut Bus) -> u8;
-    fn CLV(&mut self, bus : &mut Bus) -> u8;
-    fn CMP(&mut self, bus : &mut Bus) -> u8;
-    fn CPX(&mut self, bus : &mut Bus) -> u8;
-    fn CPY(&mut self, bus : &mut Bus) -> u8;
-    fn DEC(&mut self, bus : &mut Bus) -> u8;
-    fn DEX(&mut self, bus : &mut Bus) -> u8;
-    fn DEY(&mut self, bus : &mut Bus) -> u8;
-    fn EOR(&mut self, bus : &mut Bus) -> u8;
-    fn INC(&mut self, bus : &mut Bus) -> u8;
-    fn INX(&mut self, bus : &mut Bus) -> u8;
-    fn INY(&mut self, bus : &mut Bus) -> u8;
-    fn JMP(&mut self, bus : &mut Bus) -> u8;
-    fn JSR(&mut self, bus : &mut Bus) -> u8;
-    fn LDA(&mut self, bus : &mut Bus) -> u8;
-    fn LDX(&mut self, bus : &mut Bus) -> u8;
-    fn NOP(&mut self, bus : &mut Bus) -> u8;
-    fn ORA(&mut self, bus : &mut Bus) -> u8;
-    fn PHA(&mut self, bus : &mut Bus) -> u8;
-    fn PHP(&mut self, bus : &mut Bus) -> u8;
-    fn PLA(&mut self, bus : &mut Bus) -> u8;
-    fn PLP(&mut self, bus : &mut Bus) -> u8;
-    fn ROL(&mut self, bus : &mut Bus) -> u8;
-    fn ROR(&mut self, bus : &mut Bus) -> u8;
-    fn RTI(&mut self, bus : &mut Bus) -> u8;
-    fn RTS(&mut self, bus : &mut Bus) -> u8;
-    fn SBC(&mut self, bus : &mut Bus) -> u8;
-    fn SEC(&mut self, bus : &mut Bus) -> u8;
-    fn SED(&mut self, bus : &mut Bus) -> u8;
-    fn SEI(&mut self, bus : &mut Bus) -> u8;
-    fn STA(&mut self, bus : &mut Bus) -> u8;
-    fn STX(&mut self, bus : &mut Bus) -> u8;
-    fn STY(&mut self, bus : &mut Bus) -> u8;
-    fn TAX(&mut self, bus : &mut Bus) -> u8;
-    fn TAY(&mut self, bus : &mut Bus) -> u8;
-    fn TSX(&mut self, bus : &mut Bus) -> u8;
-    fn TXA(&mut self, bus : &mut Bus) -> u8;
-    fn TXS(&mut self, bus : &mut Bus) -> u8;
-    fn TYA(&mut self, bus : &mut Bus) -> u8;
+    fn ADC(&mut self, bus: &mut Bus) -> u8;
+    fn AND(&mut self, bus: &mut Bus) -> u8;
+    fn ASL(&mut self, bus: &mut Bus) -> u8;
+    fn BCC(&mut self) -> u8;
+    fn BCS(&mut self) -> u8;
+    fn BEQ(&mut self) -> u8;
+    fn BIT(&mut self, bus: &mut Bus) -> u8;
+    fn BMI(&mut self) -> u8;
+    fn BNE(&mut self) -> u8;
+    fn BPL(&mut self) -> u8;
+    fn BRK(&mut self, bus: &mut Bus) -> u8;
+    fn BVC(&mut self) -> u8;
+    fn BVS(&mut self) -> u8;
+    fn CLC(&mut self) -> u8;
+    fn CLD(&mut self) -> u8;
+    fn CLI(&mut self, bus: &mut Bus) -> u8;
+    fn CLV(&mut self, bus: &mut Bus) -> u8;
+    fn CMP(&mut self, bus: &mut Bus) -> u8;
+    fn CPX(&mut self, bus: &mut Bus) -> u8;
+    fn CPY(&mut self, bus: &mut Bus) -> u8;
+    fn DEC(&mut self, bus: &mut Bus) -> u8;
+    fn DEX(&mut self, bus: &mut Bus) -> u8;
+    fn DEY(&mut self, bus: &mut Bus) -> u8;
+    fn EOR(&mut self, bus: &mut Bus) -> u8;
+    fn INC(&mut self, bus: &mut Bus) -> u8;
+    fn INX(&mut self, bus: &mut Bus) -> u8;
+    fn INY(&mut self, bus: &mut Bus) -> u8;
+    fn JMP(&mut self, bus: &mut Bus) -> u8;
+    fn JSR(&mut self, bus: &mut Bus) -> u8;
+    fn LDA(&mut self, bus: &mut Bus) -> u8;
+    fn LDX(&mut self, bus: &mut Bus) -> u8;
+    fn NOP(&mut self, bus: &mut Bus) -> u8;
+    fn ORA(&mut self, bus: &mut Bus) -> u8;
+    fn PHA(&mut self, bus: &mut Bus) -> u8;
+    fn PHP(&mut self, bus: &mut Bus) -> u8;
+    fn PLA(&mut self, bus: &mut Bus) -> u8;
+    fn PLP(&mut self, bus: &mut Bus) -> u8;
+    fn ROL(&mut self, bus: &mut Bus) -> u8;
+    fn ROR(&mut self, bus: &mut Bus) -> u8;
+    fn RTI(&mut self, bus: &mut Bus) -> u8;
+    fn RTS(&mut self, bus: &mut Bus) -> u8;
+    fn SBC(&mut self, bus: &mut Bus) -> u8;
+    fn SEC(&mut self, bus: &mut Bus) -> u8;
+    fn SED(&mut self, bus: &mut Bus) -> u8;
+    fn SEI(&mut self, bus: &mut Bus) -> u8;
+    fn STA(&mut self, bus: &mut Bus) -> u8;
+    fn STX(&mut self, bus: &mut Bus) -> u8;
+    fn STY(&mut self, bus: &mut Bus) -> u8;
+    fn TAX(&mut self, bus: &mut Bus) -> u8;
+    fn TAY(&mut self, bus: &mut Bus) -> u8;
+    fn TSX(&mut self, bus: &mut Bus) -> u8;
+    fn TXA(&mut self, bus: &mut Bus) -> u8;
+    fn TXS(&mut self, bus: &mut Bus) -> u8;
+    fn TYA(&mut self, bus: &mut Bus) -> u8;
 
     fn XXX(&mut self) -> u8; // Unintended operations
 }
@@ -334,18 +343,18 @@ impl CpuApplyFunctions for OLC6502 {
             "ADC" => self.ADC(bus),
             "AND" => self.AND(bus),
             "ASL" => self.ASL(bus),
-            "BCC" => self.BCC(bus),
-            "BCS" => self.BCS(bus),
-            "BEQ" => self.BEQ(bus),
+            "BCC" => self.BCC(),
+            "BCS" => self.BCS(),
+            "BEQ" => self.BEQ(),
             "BIT" => self.BIT(bus),
-            "BMI" => self.BMI(bus),
-            "BNE" => self.BNE(bus),
-            "BPL" => self.BPL(bus),
+            "BMI" => self.BMI(),
+            "BNE" => self.BNE(),
+            "BPL" => self.BPL(),
             "BRK" => self.BRK(bus),
-            "BVC" => self.BVC(bus),
-            "BVS" => self.BVS(bus),
-            "CLC" => self.CLC(bus),
-            "CLD" => self.CLD(bus),
+            "BVC" => self.BVC(),
+            "BVS" => self.BVS(),
+            "CLC" => self.CLC(),
+            "CLD" => self.CLD(),
             "CLI" => self.CLI(bus),
             "CLV" => self.CLV(bus),
             "CMP" => self.CMP(bus),
@@ -408,167 +417,241 @@ impl CpuApplyFunctions for OLC6502 {
 }
 
 impl OperationCodes for OLC6502 {
-    fn ADC(&mut self, bus : &mut Bus) -> u8 {
-        0u8
-    }
-    fn AND(&mut self, bus : &mut Bus) -> u8 {
+    fn ADC(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
+        let tmp :u16= (self.a + self.fetched_data + FLAGS6502::C as u8) as u16 ;
+        self.set_flag(FLAGS6502::C, tmp>255);
+        self.set_flag(FLAGS6502::Z, tmp&0x00FF == 0);
+        self.set_flag(FLAGS6502::N, tmp&0x80 == 1);
         0u8
     }
-    fn ASL(&mut self, bus : &mut Bus) -> u8 {
+    fn AND(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        self.a = self.a & self.fetched_data;
+        self.set_flag(FLAGS6502::Z, self.a==0x00);
+        self.set_flag(FLAGS6502::N, (self.a & 0x80)!=0);
+        1u8
+    }
+    fn ASL(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn BCC(&mut self, bus : &mut Bus) -> u8 {
+    fn BCC(&mut self) -> u8 {
+        if self.get_flag(FLAGS6502::C) == 0 {
+            self.cycles+=1;
+            self.addr_abs = self.pc + self.addr_rel;
+            if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
+                self.cycles+=1;
+            }
+            self.pc = self.addr_abs;
+        }
         0u8
     }
-    fn BCS(&mut self, bus : &mut Bus) -> u8 {
+    fn BCS(&mut self) -> u8 {
+        if self.get_flag(FLAGS6502::C) == 1 {
+            self.cycles+=1;
+            self.addr_abs = self.pc + self.addr_rel;
+            if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
+                self.cycles+=1;
+            }
+            self.pc = self.addr_abs;
+        }
         0u8
     }
-    fn BEQ(&mut self, bus : &mut Bus) -> u8 {
+    fn BEQ(&mut self) -> u8 {
+        if self.get_flag(FLAGS6502::Z) == 1 {
+            self.cycles+=1;
+            self.addr_abs = self.pc + self.addr_rel;
+            if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
+                self.cycles+=1;
+            }
+            self.pc = self.addr_abs;
+        }
         0u8
     }
-    fn BIT(&mut self, bus : &mut Bus) -> u8 {
+    fn BIT(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn BMI(&mut self, bus : &mut Bus) -> u8 {
+    fn BMI(&mut self) -> u8 {
+        if self.get_flag(FLAGS6502::N) == 1 {
+            self.cycles+=1;
+            self.addr_abs = self.pc + self.addr_rel;
+            if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
+                self.cycles+=1;
+            }
+            self.pc = self.addr_abs;
+        }
         0u8
     }
-    fn BNE(&mut self, bus : &mut Bus) -> u8 {
+    fn BNE(&mut self) -> u8 {
+        if self.get_flag(FLAGS6502::Z) == 0 {
+            self.cycles+=1;
+            self.addr_abs = self.pc + self.addr_rel;
+            if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
+                self.cycles+=1;
+            }
+            self.pc = self.addr_abs;
+        }
         0u8
     }
-    fn BPL(&mut self, bus : &mut Bus) -> u8 {
+    fn BPL(&mut self) -> u8 {
+        if self.get_flag(FLAGS6502::N) == 0 {
+            self.cycles+=1;
+            self.addr_abs = self.pc + self.addr_rel;
+            if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
+                self.cycles+=1;
+            }
+            self.pc = self.addr_abs;
+        }
         0u8
     }
-    fn BRK(&mut self, bus : &mut Bus) -> u8 {
+    fn BRK(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn BVC(&mut self, bus : &mut Bus) -> u8 {
+    fn BVC(&mut self) -> u8 {
+        if self.get_flag(FLAGS6502::V) == 0 {
+            self.cycles+=1;
+            self.addr_abs = self.pc + self.addr_rel;
+            if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
+                self.cycles+=1;
+            }
+            self.pc = self.addr_abs;
+        }
         0u8
     }
-    fn BVS(&mut self, bus : &mut Bus) -> u8 {
+    fn BVS(&mut self) -> u8 {
+        if self.get_flag(FLAGS6502::V) == 1 {
+            self.cycles+=1;
+            self.addr_abs = self.pc + self.addr_rel;
+            if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
+                self.cycles+=1;
+            }
+            self.pc = self.addr_abs;
+        }
         0u8
     }
-    fn CLC(&mut self, bus : &mut Bus) -> u8 {
+    fn CLC(&mut self) -> u8 {
+        self.set_flag(FLAGS6502::C, false);
         0u8
     }
-    fn CLD(&mut self, bus : &mut Bus) -> u8 {
+    fn CLD(&mut self) -> u8 {
+        self.set_flag(FLAGS6502::C, false);
         0u8
     }
-    fn CLI(&mut self, bus : &mut Bus) -> u8 {
+    fn CLI(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn CLV(&mut self, bus : &mut Bus) -> u8 {
+    fn CLV(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn CMP(&mut self, bus : &mut Bus) -> u8 {
+    fn CMP(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn CPX(&mut self, bus : &mut Bus) -> u8 {
+    fn CPX(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn CPY(&mut self, bus : &mut Bus) -> u8 {
+    fn CPY(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn DEC(&mut self, bus : &mut Bus) -> u8 {
+    fn DEC(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn DEX(&mut self, bus : &mut Bus) -> u8 {
+    fn DEX(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn DEY(&mut self, bus : &mut Bus) -> u8 {
+    fn DEY(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn EOR(&mut self, bus : &mut Bus) -> u8 {
+    fn EOR(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn INC(&mut self, bus : &mut Bus) -> u8 {
+    fn INC(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn INX(&mut self, bus : &mut Bus) -> u8 {
+    fn INX(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn INY(&mut self, bus : &mut Bus) -> u8 {
+    fn INY(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn JMP(&mut self, bus : &mut Bus) -> u8 {
+    fn JMP(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn JSR(&mut self, bus : &mut Bus) -> u8 {
+    fn JSR(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn LDA(&mut self, bus : &mut Bus) -> u8 {
+    fn LDA(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn LDX(&mut self, bus : &mut Bus) -> u8 {
+    fn LDX(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn NOP(&mut self, bus : &mut Bus) -> u8 {
+    fn NOP(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn ORA(&mut self, bus : &mut Bus) -> u8 {
+    fn ORA(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn PHA(&mut self, bus : &mut Bus) -> u8 {
+    fn PHA(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn PHP(&mut self, bus : &mut Bus) -> u8 {
+    fn PHP(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn PLA(&mut self, bus : &mut Bus) -> u8 {
+    fn PLA(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn PLP(&mut self, bus : &mut Bus) -> u8 {
+    fn PLP(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn ROL(&mut self, bus : &mut Bus) -> u8 {
+    fn ROL(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn ROR(&mut self, bus : &mut Bus) -> u8 {
+    fn ROR(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn RTI(&mut self, bus : &mut Bus) -> u8 {
+    fn RTI(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn RTS(&mut self, bus : &mut Bus) -> u8 {
+    fn RTS(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn SBC(&mut self, bus : &mut Bus) -> u8 {
+    fn SBC(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn SEC(&mut self, bus : &mut Bus) -> u8 {
+    fn SEC(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn SED(&mut self, bus : &mut Bus) -> u8 {
+    fn SED(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn SEI(&mut self, bus : &mut Bus) -> u8 {
+    fn SEI(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn STA(&mut self, bus : &mut Bus) -> u8 {
+    fn STA(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn STX(&mut self, bus : &mut Bus) -> u8 {
+    fn STX(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn STY(&mut self, bus : &mut Bus) -> u8 {
+    fn STY(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn TAX(&mut self, bus : &mut Bus) -> u8 {
+    fn TAX(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn TAY(&mut self, bus : &mut Bus) -> u8 {
+    fn TAY(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn TSX(&mut self, bus : &mut Bus) -> u8 {
+    fn TSX(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn TXA(&mut self, bus : &mut Bus) -> u8 {
+    fn TXA(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn TXS(&mut self, bus : &mut Bus) -> u8 {
+    fn TXS(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
-    fn TYA(&mut self, bus : &mut Bus) -> u8 {
+    fn TYA(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
 
@@ -596,9 +679,9 @@ impl CPUFunctions for OLC6502 {
     fn set_flag(&mut self, f: FLAGS6502, v: bool) {}
     fn reset(&mut self) {}
     fn interupt_req(&mut self) {}
-    fn fetch_data(&mut self, bus : &mut Bus) -> u8{
-        if self.lookup[self.curr_opcode as usize].addr_mode == "IMP"{
-            self.fetched_data = self.read(bus,self.addr_abs,true);
+    fn fetch_data(&mut self, bus: &mut Bus) -> u8 {
+        if self.lookup[self.curr_opcode as usize].addr_mode == "IMP" {
+            self.fetched_data = self.read(bus, self.addr_abs, true);
         }
         self.fetched_data
     }
