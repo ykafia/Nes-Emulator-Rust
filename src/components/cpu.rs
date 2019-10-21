@@ -161,6 +161,8 @@ pub trait OperationCodes {
     fn JSR(&mut self, bus: &mut Bus) -> u8;
     fn LDA(&mut self, bus: &mut Bus) -> u8;
     fn LDX(&mut self, bus: &mut Bus) -> u8;
+    fn LDY(&mut self, bus: &mut Bus) -> u8;
+    fn LSR(&mut self, bus: &mut Bus) -> u8;
     fn NOP(&mut self, bus: &mut Bus) -> u8;
     fn ORA(&mut self, bus: &mut Bus) -> u8;
     fn PHA(&mut self, bus: &mut Bus) -> u8;
@@ -370,6 +372,8 @@ impl CpuApplyFunctions for OLC6502 {
             "JSR" => self.JSR(bus),
             "LDA" => self.LDA(bus),
             "LDX" => self.LDX(bus),
+            "LDY" => self.LDY(bus),
+            "LSR" => self.LSR(bus),
             "NOP" => self.NOP(bus),
             "ORA" => self.ORA(bus),
             "PHA" => self.PHA(bus),
@@ -422,7 +426,7 @@ impl OperationCodes for OLC6502 {
         let tmp: u16 = (self.a + self.fetched_data + FLAGS6502::C as u8) as u16;
         self.set_flag(FLAGS6502::C, tmp > 255);
         self.set_flag(FLAGS6502::Z, tmp & 0x00FF == 0);
-        self.set_flag(FLAGS6502::N, tmp & 0x80 == 1);
+        self.set_flag(FLAGS6502::N, !tmp.get_low_byte().get_high_bit());
         self.set_flag(
             FLAGS6502::V,
             !(self.a ^ self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 != 0,
@@ -435,7 +439,7 @@ impl OperationCodes for OLC6502 {
         self.fetch_data(bus);
         self.a = self.a & self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.a == 0x00);
-        self.set_flag(FLAGS6502::N, self.a.get_high_bit());
+        self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         1u8
     }
     /// Arithmetic Shift Left, Done
@@ -489,7 +493,7 @@ impl OperationCodes for OLC6502 {
         let result = self.a & self.fetched_data;
         self.set_flag(FLAGS6502::Z, result == 0);
         self.set_flag(FLAGS6502::V, result.get_next_bit());
-        self.set_flag(FLAGS6502::N, result.get_high_bit());
+        self.set_flag(FLAGS6502::N, !result.get_high_bit());
         0u8
     }
     /// Branch if minus, Done
@@ -598,7 +602,7 @@ impl OperationCodes for OLC6502 {
 
         self.fetch_data(bus);
         let value = self.a - self.fetched_data;
-        self.set_flag(FLAGS6502::N, value.get_high_bit());
+        self.set_flag(FLAGS6502::N, !value.get_high_bit());
         self.set_flag(FLAGS6502::Z, self.a == value);
         self.set_flag(FLAGS6502::C, self.a >= value);
         1u8
@@ -607,7 +611,7 @@ impl OperationCodes for OLC6502 {
     fn CPX(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
         let result = self.x - self.fetched_data;
-        self.set_flag(FLAGS6502::N, result.get_high_bit());
+        self.set_flag(FLAGS6502::N, !result.get_high_bit());
         self.set_flag(FLAGS6502::Z, result == 0);
         self.set_flag(FLAGS6502::C, self.x >= self.fetched_data);
         0u8
@@ -616,7 +620,7 @@ impl OperationCodes for OLC6502 {
     fn CPY(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
         let result = self.y - self.fetched_data;
-        self.set_flag(FLAGS6502::N, result.get_high_bit());
+        self.set_flag(FLAGS6502::N, !result.get_high_bit());
         self.set_flag(FLAGS6502::Z, result == 0);
         self.set_flag(FLAGS6502::C, self.y >= self.fetched_data);
         0u8
@@ -627,7 +631,7 @@ impl OperationCodes for OLC6502 {
         let tmp = self.fetched_data - 1;
         self.write(bus, self.addr_rel, tmp);
         self.set_flag(FLAGS6502::Z, tmp == 0);
-        self.set_flag(FLAGS6502::N, tmp.get_high_bit());
+        self.set_flag(FLAGS6502::N, !tmp.get_high_bit());
         
         0u8
     }
@@ -635,21 +639,21 @@ impl OperationCodes for OLC6502 {
     fn DEX(&mut self) -> u8 {
         self.x -= 1;
         self.set_flag(FLAGS6502::Z, self.x==0);
-        self.set_flag(FLAGS6502::N, self.x.get_high_bit());
+        self.set_flag(FLAGS6502::N, !self.x.get_high_bit());
         0u8
     }
     /// Decrement Y register, Done
     fn DEY(&mut self) -> u8 {
         self.y -= 1;
         self.set_flag(FLAGS6502::Z, self.y==0);
-        self.set_flag(FLAGS6502::N, self.y.get_high_bit());
+        self.set_flag(FLAGS6502::N, !self.y.get_high_bit());
         0u8
     }
     /// Exclusive Or
     fn EOR(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
         self.a ^= self.fetched_data;
-        self.set_flag(FLAGS6502::N, self.a.get_high_bit());
+        self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         self.set_flag(FLAGS6502::Z, self.a == 0);
         0u8
     }
@@ -658,7 +662,7 @@ impl OperationCodes for OLC6502 {
         self.fetch_data(bus);
         let temp = self.fetched_data +1;
         self.write(bus, self.addr_abs, temp);
-        self.set_flag(FLAGS6502::N, temp.get_high_bit());
+        self.set_flag(FLAGS6502::N, !temp.get_high_bit());
         self.set_flag(FLAGS6502::Z, temp == 0);
         0u8
     }
@@ -666,14 +670,14 @@ impl OperationCodes for OLC6502 {
     fn INX(&mut self) -> u8 {
         self.x += 1;
         self.set_flag(FLAGS6502::Z, self.x==0);
-        self.set_flag(FLAGS6502::N, self.x.get_high_bit());
+        self.set_flag(FLAGS6502::N, !self.x.get_high_bit());
         0u8
     }
     /// Increment Y register
     fn INY(&mut self) -> u8 {
         self.y += 1;
         self.set_flag(FLAGS6502::Z, self.y==0);
-        self.set_flag(FLAGS6502::N, self.y.get_high_bit());
+        self.set_flag(FLAGS6502::N, !self.y.get_high_bit());
         0u8
     }
     /// Jump to specified location
@@ -691,10 +695,42 @@ impl OperationCodes for OLC6502 {
         self.pc = self.addr_abs;
         0u8
     }
+    /// Load data to the accumumator
     fn LDA(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        self.a = self.fetched_data;
+        self.set_flag(FLAGS6502::Z, self.a == 0);
+        self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         0u8
     }
+    /// Load data to X register
     fn LDX(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        self.x = self.fetched_data;
+        self.set_flag(FLAGS6502::Z, self.x == 0);
+        self.set_flag(FLAGS6502::N, !self.x.get_high_bit());
+        0u8
+    }
+    /// Load data to Y register
+    fn LDY(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        self.y = self.fetched_data;
+        self.set_flag(FLAGS6502::Z, self.y == 0);
+        self.set_flag(FLAGS6502::N, !self.y.get_high_bit());
+        0u8
+    }
+    fn LSR(&mut self, bus: &mut Bus) -> u8{
+        self.fetch_data(bus);
+        let mut tmp = self.read(bus, self.addr_abs, true);
+        self.set_flag(FLAGS6502::C, tmp.get_low_bit());
+        tmp >>= 1;
+        match self.lookup[self.curr_opcode as usize].addr_mode.as_str(){
+            "IMP" => self.a = tmp,
+            _ => self.write(bus, self.addr_abs, tmp)
+        }
+        
+        self.set_flag(FLAGS6502::Z, tmp == 0);
+        self.set_flag(FLAGS6502::N, !tmp.get_high_bit());
         0u8
     }
     fn NOP(&mut self, bus: &mut Bus) -> u8 {
@@ -717,7 +753,7 @@ impl OperationCodes for OLC6502 {
         self.stkp += 1;
         self.a = self.read(bus, 0x0100 + self.stkp as u16, true);
         self.set_flag(FLAGS6502::Z, self.a == 0);
-        self.set_flag(FLAGS6502::N, self.a & 0x80 != 0);
+        self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         0u8
     }
     fn PLP(&mut self, bus: &mut Bus) -> u8 {
@@ -752,7 +788,7 @@ impl OperationCodes for OLC6502 {
         let tmp: u16 = (self.a + value + FLAGS6502::C as u8) as u16;
         self.set_flag(FLAGS6502::C, tmp > 255);
         self.set_flag(FLAGS6502::Z, tmp & 0x00FF == 0);
-        self.set_flag(FLAGS6502::N, tmp & 0x80 == 1);
+        self.set_flag(FLAGS6502::N, tmp.get_low_byte().get_high_bit());
         self.set_flag(
             FLAGS6502::V,
             !(self.a ^ self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 != 0,
