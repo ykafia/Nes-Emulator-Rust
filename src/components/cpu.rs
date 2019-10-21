@@ -151,13 +151,13 @@ pub trait OperationCodes {
     fn CPX(&mut self, bus: &mut Bus) -> u8;
     fn CPY(&mut self, bus: &mut Bus) -> u8;
     fn DEC(&mut self, bus: &mut Bus) -> u8;
-    fn DEX(&mut self, bus: &mut Bus) -> u8;
-    fn DEY(&mut self, bus: &mut Bus) -> u8;
+    fn DEX(&mut self) -> u8;
+    fn DEY(&mut self) -> u8;
     fn EOR(&mut self, bus: &mut Bus) -> u8;
     fn INC(&mut self, bus: &mut Bus) -> u8;
-    fn INX(&mut self, bus: &mut Bus) -> u8;
-    fn INY(&mut self, bus: &mut Bus) -> u8;
-    fn JMP(&mut self, bus: &mut Bus) -> u8;
+    fn INX(&mut self) -> u8;
+    fn INY(&mut self) -> u8;
+    fn JMP(&mut self) -> u8;
     fn JSR(&mut self, bus: &mut Bus) -> u8;
     fn LDA(&mut self, bus: &mut Bus) -> u8;
     fn LDX(&mut self, bus: &mut Bus) -> u8;
@@ -360,13 +360,13 @@ impl CpuApplyFunctions for OLC6502 {
             "CPX" => self.CPX(bus),
             "CPY" => self.CPY(bus),
             "DEC" => self.DEC(bus),
-            "DEX" => self.DEX(bus),
-            "DEY" => self.DEY(bus),
+            "DEX" => self.DEX(),
+            "DEY" => self.DEY(),
             "EOR" => self.EOR(bus),
             "INC" => self.INC(bus),
-            "INX" => self.INX(bus),
-            "INY" => self.INY(bus),
-            "JMP" => self.JMP(bus),
+            "INX" => self.INX(),
+            "INY" => self.INY(),
+            "JMP" => self.JMP(),
             "JSR" => self.JSR(bus),
             "LDA" => self.LDA(bus),
             "LDX" => self.LDX(bus),
@@ -621,31 +621,74 @@ impl OperationCodes for OLC6502 {
         self.set_flag(FLAGS6502::C, self.y >= self.fetched_data);
         0u8
     }
+    /// Decrement value, Done
     fn DEC(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        let tmp = self.fetched_data - 1;
+        self.write(bus, self.addr_rel, tmp);
+        self.set_flag(FLAGS6502::Z, tmp == 0);
+        self.set_flag(FLAGS6502::N, tmp.get_high_bit());
+        
         0u8
     }
-    fn DEX(&mut self, bus: &mut Bus) -> u8 {
+    /// Decrement X register, Done
+    fn DEX(&mut self) -> u8 {
+        self.x -= 1;
+        self.set_flag(FLAGS6502::Z, self.x==0);
+        self.set_flag(FLAGS6502::N, self.x.get_high_bit());
         0u8
     }
-    fn DEY(&mut self, bus: &mut Bus) -> u8 {
+    /// Decrement Y register, Done
+    fn DEY(&mut self) -> u8 {
+        self.y -= 1;
+        self.set_flag(FLAGS6502::Z, self.y==0);
+        self.set_flag(FLAGS6502::N, self.y.get_high_bit());
         0u8
     }
+    /// Exclusive Or
     fn EOR(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        self.a ^= self.fetched_data;
+        self.set_flag(FLAGS6502::N, self.a.get_high_bit());
+        self.set_flag(FLAGS6502::Z, self.a == 0);
         0u8
     }
+    /// Increment data
     fn INC(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        let temp = self.fetched_data +1;
+        self.write(bus, self.addr_abs, temp);
+        self.set_flag(FLAGS6502::N, temp.get_high_bit());
+        self.set_flag(FLAGS6502::Z, temp == 0);
         0u8
     }
-    fn INX(&mut self, bus: &mut Bus) -> u8 {
+    /// Increment X register
+    fn INX(&mut self) -> u8 {
+        self.x += 1;
+        self.set_flag(FLAGS6502::Z, self.x==0);
+        self.set_flag(FLAGS6502::N, self.x.get_high_bit());
         0u8
     }
-    fn INY(&mut self, bus: &mut Bus) -> u8 {
+    /// Increment Y register
+    fn INY(&mut self) -> u8 {
+        self.y += 1;
+        self.set_flag(FLAGS6502::Z, self.y==0);
+        self.set_flag(FLAGS6502::N, self.y.get_high_bit());
         0u8
     }
-    fn JMP(&mut self, bus: &mut Bus) -> u8 {
+    /// Jump to specified location
+    fn JMP(&mut self) -> u8 {
+        self.pc = self.addr_abs;
         0u8
     }
+    /// Jump to sub routine, push current program counter to stack
     fn JSR(&mut self, bus: &mut Bus) -> u8 {
+        self.pc -=1;
+        self.write(bus, 0x0100 + self.stkp as u16, self.pc.get_high_byte());
+        self.stkp-=1;
+        self.write(bus, 0x0100 + self.stkp as u16, self.pc.get_high_byte());
+        self.stkp-=1;
+        self.pc = self.addr_abs;
         0u8
     }
     fn LDA(&mut self, bus: &mut Bus) -> u8 {
