@@ -417,6 +417,7 @@ impl CpuApplyFunctions for OLC6502 {
 }
 
 impl OperationCodes for OLC6502 {
+    /// Add with carry, Done 
     fn ADC(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
         let tmp: u16 = (self.a + self.fetched_data + FLAGS6502::C as u8) as u16;
@@ -430,6 +431,7 @@ impl OperationCodes for OLC6502 {
         self.a = (tmp & 0x00FF) as u8;
         1u8
     }
+    /// Bitwise AND, Done
     fn AND(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
         self.a = self.a & self.fetched_data;
@@ -437,9 +439,15 @@ impl OperationCodes for OLC6502 {
         self.set_flag(FLAGS6502::N, (self.a & 0x80) != 0);
         1u8
     }
+    /// Arithmetic Shift Left, Done
     fn ASL(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        self.a = self.fetched_data;
+        self.set_flag(FLAGS6502::C,self.a>>7 == 1);
+        self.a = self.a << 1;
         0u8
     }
+    /// Branch on carry clear, Done
     fn BCC(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::C) == 0 {
             self.cycles += 1;
@@ -451,6 +459,7 @@ impl OperationCodes for OLC6502 {
         }
         0u8
     }
+    /// Branch on carry set, Done
     fn BCS(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::C) == 1 {
             self.cycles += 1;
@@ -462,6 +471,7 @@ impl OperationCodes for OLC6502 {
         }
         0u8
     }
+    /// Branch if equal, Done
     fn BEQ(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::Z) == 1 {
             self.cycles += 1;
@@ -473,9 +483,17 @@ impl OperationCodes for OLC6502 {
         }
         0u8
     }
+    /// Bit test, Done (by hand)
     fn BIT(&mut self, bus: &mut Bus) -> u8 {
+        //TODO: Check if the opcode is the 89 version
+        self.fetch_data(bus);
+        let result = self.a & self.fetched_data;
+        self.set_flag(FLAGS6502::Z, (result & 0x01) == 1);
+        self.set_flag(FLAGS6502::V, (result & 0xFE)==1);
+        self.set_flag(FLAGS6502::N, (result & 0xFF)==1);
         0u8
     }
+    /// Branch if minus, Done
     fn BMI(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::N) == 1 {
             self.cycles += 1;
@@ -487,6 +505,7 @@ impl OperationCodes for OLC6502 {
         }
         0u8
     }
+    /// Branch not equal, Done
     fn BNE(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::Z) == 0 {
             self.cycles += 1;
@@ -498,6 +517,7 @@ impl OperationCodes for OLC6502 {
         }
         0u8
     }
+    /// Branch if positive, Done
     fn BPL(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::N) == 0 {
             self.cycles += 1;
@@ -509,6 +529,7 @@ impl OperationCodes for OLC6502 {
         }
         0u8
     }
+    /// Break, Done
     fn BRK(&mut self, bus: &mut Bus) -> u8 {
         self.set_flag(FLAGS6502::B, true);
         self.stkp += 1;
@@ -529,6 +550,7 @@ impl OperationCodes for OLC6502 {
 
         0u8
     }
+    /// Branch if overflow clear, Done
     fn BVC(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::V) == 0 {
             self.cycles += 1;
@@ -540,6 +562,7 @@ impl OperationCodes for OLC6502 {
         }
         0u8
     }
+    /// Branch if overflow set, Done
     fn BVS(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::V) == 1 {
             self.cycles += 1;
@@ -551,10 +574,12 @@ impl OperationCodes for OLC6502 {
         }
         0u8
     }
+    /// Clear carry flag, Done
     fn CLC(&mut self) -> u8 {
         self.set_flag(FLAGS6502::C, false);
         0u8
     }
+    /// Clear decimal mode, Done
     fn CLD(&mut self) -> u8 {
         self.set_flag(FLAGS6502::C, false);
         0u8
@@ -613,6 +638,7 @@ impl OperationCodes for OLC6502 {
     fn ORA(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
+    /// Push accumulator, Done
     fn PHA(&mut self, bus: &mut Bus) -> u8 {
         self.write(bus, 0x0100 + self.stkp as u16, self.a);
         self.stkp -= 1;
@@ -621,6 +647,7 @@ impl OperationCodes for OLC6502 {
     fn PHP(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
+    /// Pull accumulator, Done
     fn PLA(&mut self, bus: &mut Bus) -> u8 {
         self.stkp += 1;
         self.a = self.read(bus, 0x0100 + self.stkp as u16, true);
@@ -637,6 +664,7 @@ impl OperationCodes for OLC6502 {
     fn ROR(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
+    /// Return from interupt, Done
     fn RTI(&mut self, bus: &mut Bus) -> u8 {
         self.stkp += 1;
         self.status = self.read(bus, 0x0100 + self.stkp as u16, true);
@@ -651,6 +679,7 @@ impl OperationCodes for OLC6502 {
     fn RTS(&mut self, bus: &mut Bus) -> u8 {
         0u8
     }
+    /// Substract with carry, Done
     fn SBC(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
         let value = self.fetched_data ^ 0x00FF;
@@ -771,7 +800,7 @@ impl CPUFunctions for OLC6502 {
         }
     }
     fn fetch_data(&mut self, bus: &mut Bus) -> u8 {
-        if self.lookup[self.curr_opcode as usize].addr_mode == "IMP" {
+        if self.lookup[self.curr_opcode as usize].addr_mode != "IMP" {
             self.fetched_data = self.read(bus, self.addr_abs, true);
         }
         self.fetched_data

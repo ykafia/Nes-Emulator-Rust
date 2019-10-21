@@ -1,0 +1,35 @@
+***********************************************************************************************************************
+5         Alphabetic Opcode Listing
+
+Each code will have a C-style pseudo code snip, and a verbal description of the opcodes.
+  The code style one assumes the following values:
+    A      Accumulator (in 8bit or 16bit)
+    Al     65c816- Specifically the lower byte of the accumulator
+    B      65c816- Specifically the upper byte of the accumulator
+    B      65ce02- Base page register
+    b      Break flag
+    C      65c816- Full 16bit accumulator
+    c      Carry flag
+    D      65c816- Direct Page pointer
+    d      Decimal flag
+    DBR    65c816- Data Bank Register
+    e      65c816- Emulation flag
+    e      65ce02- Extended Stack Disable flag
+    i      Interrupt Disable flag
+    fid    65ce02- Full Interrupt Disable flag
+    LRAO   65ce02- Lower Region Address Offset
+    m      65c816- Memory/Accumulator select flag
+    MMRF   65ce02- Masked Map Region Flags
+    MPRx   HuC6280- Memory Mapper Register x (0 - 7 are valid)
+    n      Negative flag
+    P      Program flags, as a single 8bit value
+    PC     Program Counter
+    S      Stack Pointer
+    t      HuC6280- Memory Operation flag
+    URAO   65ce02- Upper Region Address Offset
+    v      Overflow flag
+    X      X Index register
+    x      65c816- Index select flag
+    Y      Y Index register
+    z      Zero flag
+    Z      65ce02- Z Index register
