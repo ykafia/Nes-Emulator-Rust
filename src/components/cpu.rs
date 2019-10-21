@@ -768,13 +768,43 @@ impl OperationCodes for OLC6502 {
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         0u8
     }
+    // TODO: Check this one
+    /// Pop status from the stack
     fn PLP(&mut self, bus: &mut Bus) -> u8 {
+        self.stkp += 1;
+        self.status = self.read(bus, 0x0100 + self.stkp as u16, true);
         0u8
     }
     fn ROL(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        let tmp = (self.fetched_data as u16) << 1 | self.get_flag(FLAGS6502::C) as u16;
+        
+        self.set_flag(FLAGS6502::C, tmp.get_nth_bit(8));
+        self.set_flag(FLAGS6502::Z, tmp.get_low_byte() == 0 );
+        self.set_flag(FLAGS6502::N, tmp.get_low_byte().get_high_bit());
+
+        match self.lookup[self.curr_opcode as usize].addr_mode.as_str() {
+            "IMP" => self.a = tmp.get_low_byte(),
+            _ => self.write(bus, self.addr_abs, tmp.get_low_byte())
+        }
+        
         0u8
     }
     fn ROR(&mut self, bus: &mut Bus) -> u8 {
+
+        self.fetch_data(bus);
+        let mut tmp = self.fetched_data;
+        self.set_flag(FLAGS6502::C, tmp.get_low_bit());
+        tmp >>= 1;
+        
+        self.set_flag(FLAGS6502::Z, tmp == 0 );
+        self.set_flag(FLAGS6502::N, tmp.get_high_bit());
+
+        match self.lookup[self.curr_opcode as usize].addr_mode.as_str() {
+            "IMP" => self.a = tmp,
+            _ => self.write(bus, self.addr_abs, tmp)
+        }
+        
         0u8
     }
     /// Return from interupt, Done
@@ -944,6 +974,7 @@ trait BitGet{
     fn get_high_bit(&self) -> bool;
     fn get_next_bit(&self) -> bool;
     fn get_low_bit(&self) -> bool;
+    fn get_nth_bit(&self, n : u8) -> bool;
 }
 trait ByteGet{
     fn get_high_byte(&self) -> u8;
@@ -959,6 +990,9 @@ impl BitGet for u8{
     fn get_low_bit(&self) -> bool{
         (self & 0x01) == 1
     }
+    fn get_nth_bit(&self, n : u8) -> bool {
+        ((self >> 7-n) & 0x01) == 1 
+    }
 }
 impl BitGet for u16{
     fn get_high_bit(&self) -> bool{
@@ -969,6 +1003,9 @@ impl BitGet for u16{
     }
     fn get_low_bit(&self) -> bool{
         (self & 0x0001) == 1
+    }
+    fn get_nth_bit(&self, n : u8) -> bool {
+        ((self >> 15-n) & 0x01) == 1 
     }
 }
 impl ByteGet for u16{
