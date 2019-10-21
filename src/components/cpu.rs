@@ -145,8 +145,8 @@ pub trait OperationCodes {
     fn BVS(&mut self) -> u8;
     fn CLC(&mut self) -> u8;
     fn CLD(&mut self) -> u8;
-    fn CLI(&mut self, bus: &mut Bus) -> u8;
-    fn CLV(&mut self, bus: &mut Bus) -> u8;
+    fn CLI(&mut self) -> u8;
+    fn CLV(&mut self) -> u8;
     fn CMP(&mut self, bus: &mut Bus) -> u8;
     fn CPX(&mut self, bus: &mut Bus) -> u8;
     fn CPY(&mut self, bus: &mut Bus) -> u8;
@@ -262,7 +262,6 @@ impl AddressingModes for OLC6502 {
         let lo: u16 = self.read(bus, self.pc, true).into();
         self.pc += 1;
         let hi: u16 = self.read(bus, self.pc, true).into();
-        //self.addr_abs = (((hi<<8) | lo) + (self.x as u16)).into();
         self.addr_abs = (hi << 8) | lo;
         self.addr_abs += self.x as u16;
 
@@ -355,8 +354,8 @@ impl CpuApplyFunctions for OLC6502 {
             "BVS" => self.BVS(),
             "CLC" => self.CLC(),
             "CLD" => self.CLD(),
-            "CLI" => self.CLI(bus),
-            "CLV" => self.CLV(bus),
+            "CLI" => self.CLI(),
+            "CLV" => self.CLV(),
             "CMP" => self.CMP(bus),
             "CPX" => self.CPX(bus),
             "CPY" => self.CPY(bus),
@@ -436,14 +435,14 @@ impl OperationCodes for OLC6502 {
         self.fetch_data(bus);
         self.a = self.a & self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.a == 0x00);
-        self.set_flag(FLAGS6502::N, (self.a & 0x80) != 0);
+        self.set_flag(FLAGS6502::N, self.a.get_high_bit());
         1u8
     }
     /// Arithmetic Shift Left, Done
     fn ASL(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
         self.a = self.fetched_data;
-        self.set_flag(FLAGS6502::C,self.a>>7 == 1);
+        self.set_flag(FLAGS6502::C,self.a.get_high_bit());
         self.a = self.a << 1;
         0u8
     }
@@ -488,9 +487,9 @@ impl OperationCodes for OLC6502 {
         //TODO: Check if the opcode is the 89 version
         self.fetch_data(bus);
         let result = self.a & self.fetched_data;
-        self.set_flag(FLAGS6502::Z, (result & 0x01) == 1);
-        self.set_flag(FLAGS6502::V, (result & 0xFE)==1);
-        self.set_flag(FLAGS6502::N, (result & 0xFF)==1);
+        self.set_flag(FLAGS6502::Z, result == 0);
+        self.set_flag(FLAGS6502::V, result.get_next_bit());
+        self.set_flag(FLAGS6502::N, result.get_high_bit());
         0u8
     }
     /// Branch if minus, Done
@@ -584,19 +583,42 @@ impl OperationCodes for OLC6502 {
         self.set_flag(FLAGS6502::C, false);
         0u8
     }
-    fn CLI(&mut self, bus: &mut Bus) -> u8 {
+    /// Clear interupt disabled, Done
+    fn CLI(&mut self) -> u8 {
+        self.set_flag(FLAGS6502::I, false);
         0u8
     }
-    fn CLV(&mut self, bus: &mut Bus) -> u8 {
+    /// Clear overflow flag, Done
+    fn CLV(&mut self) -> u8 {
+        self.set_flag(FLAGS6502::V, false);
         0u8
     }
+    /// Compare, Done
     fn CMP(&mut self, bus: &mut Bus) -> u8 {
-        0u8
+
+        self.fetch_data(bus);
+        let value = self.a - self.fetched_data;
+        self.set_flag(FLAGS6502::N, value.get_high_bit());
+        self.set_flag(FLAGS6502::Z, self.a == value);
+        self.set_flag(FLAGS6502::C, self.a >= value);
+        1u8
     }
+    /// Compare X register, Done
     fn CPX(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        let result = self.x - self.fetched_data;
+        self.set_flag(FLAGS6502::N, result.get_high_bit());
+        self.set_flag(FLAGS6502::Z, result == 0);
+        self.set_flag(FLAGS6502::C, self.x >= self.fetched_data);
         0u8
     }
+    /// Compare Y register, Done
     fn CPY(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        let result = self.y - self.fetched_data;
+        self.set_flag(FLAGS6502::N, result.get_high_bit());
+        self.set_flag(FLAGS6502::Z, result == 0);
+        self.set_flag(FLAGS6502::C, self.y >= self.fetched_data);
         0u8
     }
     fn DEC(&mut self, bus: &mut Bus) -> u8 {
@@ -825,4 +847,45 @@ impl CPUFunctions for OLC6502 {
         self.pc = hi << 8 | lo;
         self.cycles = 8;
     }
+}
+
+trait BitGet{
+    fn get_high_bit(&self) -> bool;
+    fn get_next_bit(&self) -> bool;
+    fn get_low_bit(&self) -> bool;
+}
+trait ByteGet{
+    fn get_high_byte(&self) -> u8;
+    fn get_low_byte(&self) -> u8;
+}
+impl BitGet for u8{
+    fn get_high_bit(&self) -> bool{
+        (self & 0x80) >> 7 == 1
+    }
+    fn get_next_bit(&self) -> bool{
+        (self & 0x40) >> 6 == 1
+    }
+    fn get_low_bit(&self) -> bool{
+        (self & 0x01) == 1
+    }
+}
+impl BitGet for u16{
+    fn get_high_bit(&self) -> bool{
+        (self & 0x8000) >> 15 == 1
+    }
+    fn get_next_bit(&self) -> bool{
+        (self & 0x4000) >> 14 == 1
+    }
+    fn get_low_bit(&self) -> bool{
+        (self & 0x0001) == 1
+    }
+}
+impl ByteGet for u16{
+    fn get_low_byte(&self) -> u8{
+        (self & 0x00FF) as u8
+    }
+    fn get_high_byte(&self) -> u8{
+        ((self & 0xFF00) >> 8) as u8
+    }
+
 }
