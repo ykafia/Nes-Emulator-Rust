@@ -820,6 +820,11 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     fn RTS(&mut self, bus: &mut Bus) -> u8 {
+        self.stkp+=1;
+        let hi = (self.read(bus, 0x0100 + self.stkp as u16, true) as u16) << 8;
+        let lo = self.read(bus, 0x0100 + (self.stkp + 1) as u16, true) as u16;
+        self.pc=hi+lo;
+
         0u8
     }
     /// Substract with carry, Done
