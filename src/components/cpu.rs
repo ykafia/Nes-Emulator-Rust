@@ -163,7 +163,7 @@ pub trait OperationCodes {
     fn LDX(&mut self, bus: &mut Bus) -> u8;
     fn LDY(&mut self, bus: &mut Bus) -> u8;
     fn LSR(&mut self, bus: &mut Bus) -> u8;
-    fn NOP(&mut self, bus: &mut Bus) -> u8;
+    fn NOP(&mut self) -> u8;
     fn ORA(&mut self, bus: &mut Bus) -> u8;
     fn PHA(&mut self, bus: &mut Bus) -> u8;
     fn PHP(&mut self, bus: &mut Bus) -> u8;
@@ -374,7 +374,7 @@ impl CpuApplyFunctions for OLC6502 {
             "LDX" => self.LDX(bus),
             "LDY" => self.LDY(bus),
             "LSR" => self.LSR(bus),
-            "NOP" => self.NOP(bus),
+            "NOP" => self.NOP(),
             "ORA" => self.ORA(bus),
             "PHA" => self.PHA(bus),
             "PHP" => self.PHP(bus),
@@ -719,6 +719,7 @@ impl OperationCodes for OLC6502 {
         self.set_flag(FLAGS6502::N, !self.y.get_high_bit());
         0u8
     }
+    /// Logical shift right
     fn LSR(&mut self, bus: &mut Bus) -> u8{
         self.fetch_data(bus);
         let mut tmp = self.read(bus, self.addr_abs, true);
@@ -733,10 +734,16 @@ impl OperationCodes for OLC6502 {
         self.set_flag(FLAGS6502::N, !tmp.get_high_bit());
         0u8
     }
-    fn NOP(&mut self, bus: &mut Bus) -> u8 {
+    /// No operation, do nothing
+    fn NOP(&mut self) -> u8 {
         0u8
     }
+    /// Inclusive Or with accumulator
     fn ORA(&mut self, bus: &mut Bus) -> u8 {
+        self.fetch_data(bus);
+        self.a |= self.fetched_data;
+        self.set_flag(FLAGS6502::Z, self.a == 0);
+        self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         0u8
     }
     /// Push accumulator, Done
@@ -745,7 +752,12 @@ impl OperationCodes for OLC6502 {
         self.stkp -= 1;
         0u8
     }
+    /// Push status in the stack
     fn PHP(&mut self, bus: &mut Bus) -> u8 {
+        self.write(bus, 0x0100 + self.stkp as u16, self.status | 0x10);
+        self.stkp-=1;
+        self.set_flag(FLAGS6502::B, false);
+        self.set_flag(FLAGS6502::U, false);
         0u8
     }
     /// Pull accumulator, Done
