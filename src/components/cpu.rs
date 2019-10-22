@@ -174,18 +174,18 @@ pub trait OperationCodes {
     fn RTI(&mut self, bus: &mut Bus) -> u8;
     fn RTS(&mut self, bus: &mut Bus) -> u8;
     fn SBC(&mut self, bus: &mut Bus) -> u8;
-    fn SEC(&mut self, bus: &mut Bus) -> u8;
-    fn SED(&mut self, bus: &mut Bus) -> u8;
-    fn SEI(&mut self, bus: &mut Bus) -> u8;
+    fn SEC(&mut self) -> u8;
+    fn SED(&mut self) -> u8;
+    fn SEI(&mut self) -> u8;
     fn STA(&mut self, bus: &mut Bus) -> u8;
     fn STX(&mut self, bus: &mut Bus) -> u8;
     fn STY(&mut self, bus: &mut Bus) -> u8;
-    fn TAX(&mut self, bus: &mut Bus) -> u8;
-    fn TAY(&mut self, bus: &mut Bus) -> u8;
-    fn TSX(&mut self, bus: &mut Bus) -> u8;
-    fn TXA(&mut self, bus: &mut Bus) -> u8;
-    fn TXS(&mut self, bus: &mut Bus) -> u8;
-    fn TYA(&mut self, bus: &mut Bus) -> u8;
+    fn TAX(&mut self) -> u8;
+    fn TAY(&mut self) -> u8;
+    fn TSX(&mut self) -> u8;
+    fn TXA(&mut self) -> u8;
+    fn TXS(&mut self) -> u8;
+    fn TYA(&mut self) -> u8;
 
     fn XXX(&mut self) -> u8; // Unintended operations
 }
@@ -385,18 +385,18 @@ impl CpuApplyFunctions for OLC6502 {
             "RTI" => self.RTI(bus),
             "RTS" => self.RTS(bus),
             "SBC" => self.SBC(bus),
-            "SEC" => self.SEC(bus),
-            "SED" => self.SED(bus),
-            "SEI" => self.SEI(bus),
+            "SEC" => self.SEC(),
+            "SED" => self.SED(),
+            "SEI" => self.SEI(),
             "STA" => self.STA(bus),
             "STX" => self.STX(bus),
             "STY" => self.STY(bus),
-            "TAX" => self.TAX(bus),
-            "TAY" => self.TAY(bus),
-            "TSX" => self.TSX(bus),
-            "TXA" => self.TXA(bus),
-            "TXS" => self.TXS(bus),
-            "TYA" => self.TYA(bus),
+            "TAX" => self.TAX(),
+            "TAY" => self.TAY(),
+            "TSX" => self.TSX(),
+            "TXA" => self.TXA(),
+            "TXS" => self.TXS(),
+            "TYA" => self.TYA(),
             _ => self.XXX(), // Unintended operations
         }
     }
@@ -655,7 +655,7 @@ impl OperationCodes for OLC6502 {
         self.a ^= self.fetched_data;
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         self.set_flag(FLAGS6502::Z, self.a == 0);
-        0u8
+        1u8
     }
     /// Increment data
     fn INC(&mut self, bus: &mut Bus) -> u8 {
@@ -701,7 +701,7 @@ impl OperationCodes for OLC6502 {
         self.a = self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.a == 0);
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
-        0u8
+        1u8
     }
     /// Load data to X register
     fn LDX(&mut self, bus: &mut Bus) -> u8 {
@@ -709,7 +709,7 @@ impl OperationCodes for OLC6502 {
         self.x = self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.x == 0);
         self.set_flag(FLAGS6502::N, !self.x.get_high_bit());
-        0u8
+        1u8
     }
     /// Load data to Y register
     fn LDY(&mut self, bus: &mut Bus) -> u8 {
@@ -717,7 +717,7 @@ impl OperationCodes for OLC6502 {
         self.y = self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.y == 0);
         self.set_flag(FLAGS6502::N, !self.y.get_high_bit());
-        0u8
+        1u8
     }
     /// Logical shift right
     fn LSR(&mut self, bus: &mut Bus) -> u8{
@@ -734,9 +734,13 @@ impl OperationCodes for OLC6502 {
         self.set_flag(FLAGS6502::N, !tmp.get_high_bit());
         0u8
     }
-    /// No operation, do nothing
+    /// No operation, do nothing 
+    /// But there's a catch, some NOP needs more cycles (https://wiki.nesdev.com/w/index.php/CPU_unofficial_opcodes)
     fn NOP(&mut self) -> u8 {
-        0u8
+        match self.curr_opcode{
+            0xFC => 1u8,
+            _ => 0u8
+        }
     }
     /// Inclusive Or with accumulator
     fn ORA(&mut self, bus: &mut Bus) -> u8 {
@@ -744,7 +748,7 @@ impl OperationCodes for OLC6502 {
         self.a |= self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.a == 0);
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
-        0u8
+        1u8
     }
     /// Push accumulator, Done
     fn PHA(&mut self, bus: &mut Bus) -> u8 {
@@ -775,6 +779,7 @@ impl OperationCodes for OLC6502 {
         self.status = self.read(bus, 0x0100 + self.stkp as u16, true);
         0u8
     }
+    /// Rotate on left
     fn ROL(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
         let tmp = (self.fetched_data as u16) << 1 | self.get_flag(FLAGS6502::C) as u16;
@@ -790,6 +795,7 @@ impl OperationCodes for OLC6502 {
         
         0u8
     }
+    /// Rotate on right
     fn ROR(&mut self, bus: &mut Bus) -> u8 {
 
         self.fetch_data(bus);
@@ -819,6 +825,7 @@ impl OperationCodes for OLC6502 {
         self.pc |= (self.read(bus, 0x0100 + self.stkp as u16, true) as u16) << 8;
         0u8
     }
+    /// Return from subroutine, Pop the program counter from the stack
     fn RTS(&mut self, bus: &mut Bus) -> u8 {
         self.stkp+=1;
         let hi = (self.read(bus, 0x0100 + self.stkp as u16, true) as u16) << 8;
@@ -841,42 +848,71 @@ impl OperationCodes for OLC6502 {
             !(self.a ^ self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 != 0,
         );
         self.a = (tmp & 0x00FF) as u8;
+        1u8
+    }
+    /// Set carry flag to 1
+    fn SEC(&mut self) -> u8 {
+        self.set_flag(FLAGS6502::C, true);
         0u8
     }
-    fn SEC(&mut self, bus: &mut Bus) -> u8 {
+    /// Set Decimal to 1
+    fn SED(&mut self) -> u8 {
+        self.set_flag(FLAGS6502::D, true);
         0u8
     }
-    fn SED(&mut self, bus: &mut Bus) -> u8 {
+    /// Set disable interupt
+    fn SEI(&mut self) -> u8 {
+        self.set_flag(FLAGS6502::I, true);
         0u8
     }
-    fn SEI(&mut self, bus: &mut Bus) -> u8 {
-        0u8
-    }
+    /// Store accumulator in memory
     fn STA(&mut self, bus: &mut Bus) -> u8 {
+        self.write(bus, self.addr_abs, self.a);
         0u8
     }
+    /// Store X register in memory
     fn STX(&mut self, bus: &mut Bus) -> u8 {
+        self.write(bus, self.addr_abs, self.x);
         0u8
     }
+    /// Store Y register in memory
     fn STY(&mut self, bus: &mut Bus) -> u8 {
+        self.write(bus, self.addr_abs, self.y);
         0u8
     }
-    fn TAX(&mut self, bus: &mut Bus) -> u8 {
+    /// Transfer Accumulator to X
+    fn TAX(&mut self) -> u8 {
+        self.x = self.a;
+        self.set_flag(FLAGS6502::Z, self.x == 0);
+        self.set_flag(FLAGS6502::N, self.x.get_high_bit());
         0u8
     }
-    fn TAY(&mut self, bus: &mut Bus) -> u8 {
+    fn TAY(&mut self) -> u8 {
+        self.y = self.a;
+        self.set_flag(FLAGS6502::Z, self.y == 0);
+        self.set_flag(FLAGS6502::N, self.y.get_high_bit());
         0u8
     }
-    fn TSX(&mut self, bus: &mut Bus) -> u8 {
+    fn TSX(&mut self) -> u8 {
+        self.x = self.stkp;
+        self.set_flag(FLAGS6502::Z, self.x == 0);
+        self.set_flag(FLAGS6502::N, self.x.get_high_bit());
         0u8
     }
-    fn TXA(&mut self, bus: &mut Bus) -> u8 {
+    fn TXA(&mut self) -> u8 {
+        self.a = self.x;
+        self.set_flag(FLAGS6502::Z, self.a == 0);
+        self.set_flag(FLAGS6502::N, self.a.get_high_bit());
         0u8
     }
-    fn TXS(&mut self, bus: &mut Bus) -> u8 {
+    fn TXS(&mut self) -> u8 {
+        self.stkp = self.x;
         0u8
     }
-    fn TYA(&mut self, bus: &mut Bus) -> u8 {
+    fn TYA(&mut self) -> u8 {
+        self.a = self.y;
+        self.set_flag(FLAGS6502::Z, self.a == 0);
+        self.set_flag(FLAGS6502::N, self.a.get_high_bit());
         0u8
     }
 
