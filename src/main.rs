@@ -10,5 +10,5 @@ fn main() {
     let mut cpu = OLC6502::new();
     cpu.write(&mut bus, 0, 1u8);
 
-    test_cpu(&cpu, &bus);
+    test_cpu(&cpu, &bus, None);
 }

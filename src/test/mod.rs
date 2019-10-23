@@ -7,9 +7,12 @@ use super::{
     Bus
 };
 
-pub fn test_cpu(cpu : &OLC6502, bus : &Bus ){
-
-    println!("{}\n{}",display_ram(bus.ram.to_vec(), 16, 3),display_registers(cpu));
+pub fn test_cpu(cpu : &OLC6502, bus : &Bus, depth : Option<usize> ){
+    let dpth = match depth{
+        Some(x) => x,
+        None => 8
+    };
+    println!("{}\n{}",display_ram(bus.ram.to_vec() , 16, dpth),display_registers(cpu));
     
 }   
 
