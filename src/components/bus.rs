@@ -1,7 +1,5 @@
 // use super::super::components::*;
 // use super::super::utils::*;
-use std::fmt;
-
 pub struct Bus {
     pub ram: [u8; 64 * 1024],
 }

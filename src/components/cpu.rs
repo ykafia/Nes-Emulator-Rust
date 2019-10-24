@@ -95,6 +95,7 @@ pub trait CPUFunctions {
     fn interupt_req(&mut self, bus: &mut Bus);
     fn non_maskable_interupt_req(&mut self, bus: &mut Bus);
     fn fetch_data(&mut self, bus: &mut Bus) -> u8;
+
 }
 pub trait CpuIO {
     fn read(&mut self, bus: &mut Bus, addr: u16, read_only: bool) -> u8;

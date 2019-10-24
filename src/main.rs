@@ -8,7 +8,6 @@ use test::*;
 fn main() {
     let mut bus = Bus::new();
     let mut cpu = OLC6502::new();
-    cpu.write(&mut bus, 0, 1u8);
 
-    test_cpu(&cpu, &bus, None);
+    test_cpu(&mut cpu, &mut bus, None);
 }
