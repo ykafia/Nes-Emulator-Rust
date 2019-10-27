@@ -1,16 +1,18 @@
 use console::Term;
+use std::io;
 
-use super::{
-    OLC6502,
-    Bus
-};
+use super::*;
 
 pub fn test_cpu(cpu : &mut OLC6502, bus : &mut Bus, depth : Option<usize> ){
     let dpth = match depth{
         Some(x) => x,
         None => 8
     };
+    let mut input = String::new();
 
+
+    
+    let term = Term::stdout();
     // Set the reset vector
     bus.ram[0xFFFC] = 0x00;
     bus.ram[0xFFFD] = 0x80;
@@ -23,12 +25,18 @@ pub fn test_cpu(cpu : &mut OLC6502, bus : &mut Bus, depth : Option<usize> ){
     for i in 0..code.len(){
         bus.ram[0x8000+i] = code[i];
     }
+    cpu.reset(bus);
+    while input.trim() != "quit" {
 
-
-
-    println!("{}\n{}\n\n\n\nCode :\n\n{}",  display_registers(cpu),
+        cpu.clock(bus);
+        println!("{}\n{}\n\n\n\nCode :\n\n{}",  display_registers(cpu),
                         display_ram(bus.ram.to_vec() , 16, dpth),
                         display_code(bus.ram.to_vec(), 16, dpth));
+        io::stdin().read_line(&mut input).unwrap();
+        term.clear_screen().unwrap();
+    }
+    
+
     
 }   
 
@@ -65,6 +73,7 @@ fn display_registers(cpu : &OLC6502) -> String{
     result += format!("{:012} : {:0}\n","Y-Register",cpu.y).as_str();
     result += format!("{:012} : {:0}\n","StackPointer",cpu.stkp).as_str();
     result += format!("{:012} : {:0}\n","Status",cpu.status).as_str();
+    result += format!("{:012} : {:0}\n","PC",cpu.pc).as_str();
     result
 }
 
@@ -72,17 +81,11 @@ fn display_registers(cpu : &OLC6502) -> String{
 /// This functions returns a compiled assembly code  that 
 /// loads some data in the ram and executes some shift left
 /// Here is the assembly source
-/// LDA #$01
-/// ASL A
-/// ASL A 
-/// ASL A 
-/// STA $0200
 /// LDA #$05
-/// STA $0201
-/// LDA #$08
-/// STA $0202
+/// ASL A
+/// STA $0200
 fn test_code() -> String{
     
-    "A9 01 0A 0A 0A 8D 00 02 A9 05 8D 01 02 A9 08 8D 02 02".to_string()
+    "A9 05 0A 8D 00 02".to_string()
 
 }

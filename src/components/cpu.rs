@@ -925,15 +925,21 @@ impl OperationCodes for OLC6502 {
 impl CPUFunctions for OLC6502 {
     fn clock(&mut self, bus: &mut Bus) {
         if self.cycles == 0 {
-            self.curr_opcode = self.read(bus, self.pc.try_into().unwrap(), true);
+            self.curr_opcode = self.read(bus, self.pc, true);
             self.pc += 1;
             let additionnal_cycle_1 =
-                self.apply_op(self.lookup[self.curr_opcode as usize].clone(), bus);
-            let additionnal_cycle_2 =
                 self.apply_addressing_mode(self.lookup[self.curr_opcode as usize].clone(), bus);
+            let additionnal_cycle_2 =
+                self.apply_op(self.lookup[self.curr_opcode as usize].clone(), bus);
+            
             self.cycles += additionnal_cycle_1 & additionnal_cycle_2;
+            println!("Applied : {}",self.lookup[self.curr_opcode as usize].opcode);
+            println!("With opcode number : {:x}",self.curr_opcode);
         }
-        self.cycles -= 1;
+        else{
+            self.cycles -= 1;
+            println!("{} counter left till next operation",self.cycles);
+        }
     }
     fn get_flag(&mut self, f: FLAGS6502) -> u8 {
         match (self.status & f as u8) > 0 {
