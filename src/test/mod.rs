@@ -1,5 +1,8 @@
 use console::Term;
 use std::io;
+use asm6502::assemble;
+use std::fs::File;
+use std::io::prelude::*;
 
 use super::*;
 
@@ -17,10 +20,8 @@ pub fn test_cpu(cpu : &mut OLC6502, bus : &mut Bus, depth : Option<usize> ){
     bus.ram[0xFFFC] = 0x00;
     bus.ram[0xFFFD] = 0x80;
     
-    // Convert string to bytes
-    let code : Vec<u8> =  test_code().split_whitespace()
-                                     .map(|x| u8::from_str_radix(&x,16).unwrap())
-                                     .collect();
+    // get the Assembly code
+    let code : Vec<u8> =  test_code();
     // Writes the code in the ram with offset 0x8000
     for i in 0..code.len(){
         bus.ram[0x8000+i] = code[i];
@@ -30,7 +31,7 @@ pub fn test_cpu(cpu : &mut OLC6502, bus : &mut Bus, depth : Option<usize> ){
 
         cpu.clock(bus);
         println!("{}\n{}\n\n\n\nCode :\n\n{}",  display_registers(cpu),
-                        display_ram(bus.ram.to_vec() , 16, dpth),
+                        display_ram(bus.ram.to_vec(), 0x0200 , 16, dpth),
                         display_code(bus.ram.to_vec(), 16, dpth));
         io::stdin().read_line(&mut input).unwrap();
         term.clear_screen().unwrap();
@@ -41,10 +42,10 @@ pub fn test_cpu(cpu : &mut OLC6502, bus : &mut Bus, depth : Option<usize> ){
 }   
 
 /// Display ram on a length * depth
-fn display_ram(ram : Vec<u8>, length : usize, depth : usize) -> String {
+fn display_ram(ram : Vec<u8>, start : usize, length : usize, depth : usize) -> String {
     let mut result = String::new();
 
-    for i in 0..depth*length{
+    for i in start..start + depth*length{
         if i % length == 0{
             result+= format!("\n{1:00$X}  --  ",4,i).as_str();
         }
@@ -82,10 +83,15 @@ fn display_registers(cpu : &OLC6502) -> String{
 /// loads some data in the ram and executes some shift left
 /// Here is the assembly source
 /// LDA #$05
-/// ASL A
 /// STA $0200
-fn test_code() -> String{
-    
-    "A9 05 0A 8D 00 02".to_string()
-
+/// ASL A
+/// STA $0201
+fn test_code() -> Vec<u8>{
+    // vec!(8)
+    let mut result : Vec<u8> = Vec::new();
+    let mut file = File::open("src/test/main.asm").unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).unwrap();
+    assemble(contents.as_bytes(), &mut result).unwrap();
+    result
 }

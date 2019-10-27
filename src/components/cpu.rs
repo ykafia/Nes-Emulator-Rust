@@ -2,7 +2,6 @@
 
 use super::bus::*;
 use super::instruction_generator::get_lookup_list;
-use std::convert::TryInto;
 
 //TODO: Implement the rest of the cpu instructions
 
