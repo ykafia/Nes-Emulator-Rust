@@ -91,6 +91,7 @@ pub trait CPUFunctions {
     /// This should control the number of clock cycles each instructions takes.
     fn clock(&mut self, bus: &mut Bus);
     fn reset(&mut self, bus: &mut Bus);
+    fn power(&mut self, bus: &mut Bus);
     fn interupt_req(&mut self, bus: &mut Bus);
     fn non_maskable_interupt_req(&mut self, bus: &mut Bus);
     fn fetch_data(&mut self, bus: &mut Bus) -> u8;
@@ -535,13 +536,13 @@ impl OperationCodes for OLC6502 {
     /// Break, Done
     fn BRK(&mut self, bus: &mut Bus) -> u8 {
         self.set_flag(FLAGS6502::B, true);
-        self.stkp += 1;
+        self.stkp = self.stkp.checked_add(1).unwrap_or(0);
         self.write(
             bus,
             0x0100 + self.stkp as u16,
             (self.pc >> 8 & 0x00FF) as u8,
         );
-        self.stkp += 1;
+        self.stkp = self.stkp.checked_add(1).unwrap_or(0);
         self.write(bus, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
         self.stkp += 1;
         self.write(bus, 0x0100 + self.stkp as u16, self.status);
@@ -550,14 +551,13 @@ impl OperationCodes for OLC6502 {
         let hi = self.read(bus, self.addr_abs + 1, true) as u16;
         self.pc = hi << 8 | lo;
         self.set_flag(FLAGS6502::B, true);
-
         0u8
     }
     /// Branch if overflow clear, Done
     fn BVC(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::V) == 0 {
             self.cycles += 1;
-            self.addr_abs = self.pc + self.addr_rel;
+            self.addr_abs = self.pc.checked_add(self.addr_rel).unwrap_or(self.addr_rel-self.pc);
             if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
                 self.cycles += 1;
             }
@@ -619,7 +619,8 @@ impl OperationCodes for OLC6502 {
     /// Compare Y register, Done
     fn CPY(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
-        let result = self.y - self.fetched_data;
+        let result = self.y.checked_sub(self.fetched_data).unwrap_or(self.fetched_data-self.y);
+        
         self.set_flag(FLAGS6502::N, !result.get_high_bit());
         self.set_flag(FLAGS6502::Z, result == 0);
         self.set_flag(FLAGS6502::C, self.y >= self.fetched_data);
@@ -966,6 +967,21 @@ impl CPUFunctions for OLC6502 {
         self.addr_rel = 0;
         self.fetched_data = 0;
         self.cycles = 8;
+    }
+    fn power(&mut self, bus: &mut Bus){
+        self.a = 0;
+        self.x = 0;
+        self.y = 0;
+        self.stkp = 0x00;
+        self.status = 0x00 | FLAGS6502::U as u8;
+        self.addr_abs = 0xFFFC;
+        let lo = self.read(bus, self.addr_abs, true) as u16;
+        let hi = self.read(bus, self.addr_abs + 1, true) as u16;
+        self.pc = (hi << 8) | lo;
+        self.addr_abs = 0;
+        self.addr_rel = 0;
+        self.fetched_data = 0;
+        self.cycles = 3;
     }
     fn interupt_req(&mut self, bus: &mut Bus) {
         if self.get_flag(FLAGS6502::I) != 0 {

@@ -1,6 +1,5 @@
 use console::Term;
 use std::io;
-use asm6502::assemble;
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -26,7 +25,7 @@ pub fn test_cpu(cpu : &mut OLC6502, bus : &mut Bus, depth : Option<usize> ){
     for i in 0..code.len(){
         bus.ram[0x8000+i] = code[i];
     }
-    cpu.reset(bus);
+    cpu.power(bus);
     while input.trim() != "quit" {
 
         cpu.clock(bus);
@@ -69,29 +68,23 @@ fn display_code(ram : Vec<u8>, length : usize, depth : usize) -> String{
 
 fn display_registers(cpu : &OLC6502) -> String{
     let mut result = String::new();
-    result += format!("{:012} : {:0}\n","Accumulator",cpu.a).as_str();
-    result += format!("{:012} : {:0}\n","X-Register",cpu.x).as_str();
-    result += format!("{:012} : {:0}\n","Y-Register",cpu.y).as_str();
-    result += format!("{:012} : {:0}\n","StackPointer",cpu.stkp).as_str();
-    result += format!("{:012} : {:0}\n","Status",cpu.status).as_str();
-    result += format!("{:012} : {:0}\n","PC",cpu.pc).as_str();
+    result += format!("{:012} : {1:02$X}\n","Accumulator",cpu.a,2).as_str();
+    result += format!("{:012} : {1:02$X}\n","X-Register",cpu.x,2).as_str();
+    result += format!("{:012} : {1:02$X}\n","Y-Register",cpu.y,2).as_str();
+    result += format!("{:012} : {1:02$X}\n","StackPointer",cpu.stkp,2).as_str();
+    result += format!("{:012} : {1:02$X}\n","Status",cpu.status,2).as_str();
+    result += format!("{:012} : {1:02$X}\n","PC",cpu.pc,2).as_str();
     result
 }
 
 
 /// This functions returns a compiled assembly code  that 
 /// loads some data in the ram and executes some shift left
-/// Here is the assembly source
-/// LDA #$05
-/// STA $0200
-/// ASL A
-/// STA $0201
 fn test_code() -> Vec<u8>{
-    // vec!(8)
-    let mut result : Vec<u8> = Vec::new();
-    let mut file = File::open("src/test/main.asm").unwrap();
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).unwrap();
-    assemble(contents.as_bytes(), &mut result).unwrap();
-    result
+
+    let mut file = File::open("src/test/main.bin").unwrap();
+    let mut contents = Vec::new();
+    file.read_to_end(&mut contents).unwrap();
+    contents
+    
 }
