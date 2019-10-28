@@ -1008,6 +1008,7 @@ impl CPUFunctions for OLC6502 {
     }
     fn fetch_data(&mut self, bus: &mut Bus) -> u8 {
         if self.lookup[self.curr_opcode as usize].addr_mode != "IMP" {
+            println!("Fetched data in this adress : {:04X}",self.addr_abs);
             self.fetched_data = self.read(bus, self.addr_abs, true);
         }
         self.fetched_data
