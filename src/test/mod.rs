@@ -82,7 +82,7 @@ fn display_registers(cpu : &OLC6502) -> String{
 /// loads some data in the ram and executes some shift left
 fn test_code() -> Vec<u8>{
 
-    let mut file = File::open("src/test/main.bin").unwrap();
+    let mut file = File::open("src/test/at.nes").unwrap();
     let mut contents = Vec::new();
     file.read_to_end(&mut contents).unwrap();
     contents

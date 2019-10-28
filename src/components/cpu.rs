@@ -699,6 +699,7 @@ impl OperationCodes for OLC6502 {
     /// Load data to the accumumator
     fn LDA(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
+        println!("Fetched data is {:02X}",self.fetched_data);
         self.a = self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.a == 0);
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
