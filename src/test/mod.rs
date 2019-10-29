@@ -68,12 +68,16 @@ fn display_code(ram : Vec<u8>, length : usize, depth : usize) -> String{
 
 fn display_registers(cpu : &OLC6502) -> String{
     let mut result = String::new();
+    
+    result += format!("{:012} : {:03}\n","Applying",cpu.lookup[cpu.curr_opcode as usize].opcode).as_str();
+    result += format!("{:012} : {:03}\n\n","Adressing",cpu.lookup[cpu.curr_opcode as usize].addr_mode).as_str();
     result += format!("{:012} : {1:02$X}\n","Accumulator",cpu.a,2).as_str();
     result += format!("{:012} : {1:02$X}\n","X-Register",cpu.x,2).as_str();
     result += format!("{:012} : {1:02$X}\n","Y-Register",cpu.y,2).as_str();
     result += format!("{:012} : {1:02$X}\n","StackPointer",cpu.stkp,2).as_str();
     result += format!("{:012} : {1:02$X}\n","Status",cpu.status,2).as_str();
     result += format!("{:012} : {1:02$X}\n","PC",cpu.pc,2).as_str();
+    result += format!("{:012} : {1:02}\n","Cycles left",cpu.cycles).as_str();
     result
 }
 

@@ -700,7 +700,6 @@ impl OperationCodes for OLC6502 {
     /// Load data to the accumumator
     fn LDA(&mut self, bus: &mut Bus) -> u8 {
         
-        println!("Program count is {:02X}\nData address is {:04X}",self.pc,self.addr_abs);
         self.fetch_data(bus);
         
         self.a = self.fetched_data;
@@ -853,7 +852,6 @@ impl OperationCodes for OLC6502 {
             !(self.a ^ self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 != 0,
         );
         self.a = (tmp & 0x00FF) as u8;
-        println!("SBC : {:X} - {:X}",self.a,value);
         1u8
     }
     /// Set carry flag to 1
@@ -944,11 +942,9 @@ impl CPUFunctions for OLC6502 {
                 
             self.cycles += additionnal_cycle_1 & additionnal_cycle_2;
             self.set_flag(FLAGS6502::U, true);
-            println!("Applied : {}",self.lookup[self.curr_opcode as usize].opcode);
         }
         else{
             self.cycles -= 1;
-            println!("{} counter left till next operation",self.cycles);
         }
     }
     fn get_flag(&mut self, f: FLAGS6502) -> u8 {
@@ -1018,7 +1014,6 @@ impl CPUFunctions for OLC6502 {
     }
     fn fetch_data(&mut self, bus: &mut Bus) -> u8 {
         if self.lookup[self.curr_opcode as usize].addr_mode != "IMP" {
-            println!("Fetched data in this adress : {:04X}",self.addr_abs);
             self.fetched_data = self.read(bus, self.addr_abs, true);
         }
         self.fetched_data

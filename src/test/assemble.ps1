@@ -1,10 +1,9 @@
-asm6f_64.exe "test.asm" "test.nes"
-Write-Host "Displaying content of the assembled file"
-Get-Content "./test.nes" -Encoding Byte `
-    -ReadCount 16 | ForEach-Object {
-    $output = ""
-    foreach ( $byte in $_ ) {
-        $output += "{0:X2} " -f $byte
-    }
-    $output
+if($args[0].Length -ne 0){
+    $output = $args[0].replace("asm","nes")
+    asm6f_64.exe $args[0] $output
+    Write-Host "Displaying content of the assembled file"
+    Get-Content $output -Encoding Byte | Format-Hex
+}
+else{
+    Write-Host "You should specify the assembly file to assemble."
 }
