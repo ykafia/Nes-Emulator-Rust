@@ -5,8 +5,8 @@ use components::*;
 use test::*;
 
 fn main() {
-    let mut bus = Bus::new();
+    let mut nes = NesData::new();
     let mut cpu = OLC6502::new();
-
-    test_cpu(&mut cpu, &mut bus, None);
+    
+    test_cpu(&mut cpu, &mut nes, None);
 }

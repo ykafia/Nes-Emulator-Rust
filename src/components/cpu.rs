@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use super::bus::*;
+use super::*;
 use super::instruction_generator::get_lookup_list;
 use super::super::utils::*;
 //TODO: Implement the rest of the cpu instructions
@@ -23,7 +23,7 @@ pub struct OLC6502 {
     /// The 2-byte program counter PC supports 65536 direct (unbanked) memory
     /// locations, however not all values are sent to the cartridge.
     /// It can be accessed either by allowing CPU's internal fetch logic
-    /// increment the address bus, an interrupt (NMI, Reset, IRQ/BRQ),
+    /// increment the address nes, an interrupt (NMI, Reset, IRQ/BRQ),
     /// and using the RTS/JMP/JSR/Branch instructions.
     pub pc: u16,
     /// Status Register :
@@ -78,8 +78,8 @@ pub struct INSTRUCTION {
 // }
 
 pub trait CpuApplyFunctions {
-    fn apply_op(&mut self, instruction: INSTRUCTION, bus: &mut Bus) -> u8;
-    fn apply_addressing_mode(&mut self, instruction: INSTRUCTION, bus: &mut Bus) -> u8;
+    fn apply_op(&mut self, instruction: INSTRUCTION, nes: &mut NesData) -> u8;
+    fn apply_addressing_mode(&mut self, instruction: INSTRUCTION, nes: &mut NesData) -> u8;
 }
 
 /// Trait defining all the 6502 functions
@@ -89,17 +89,17 @@ pub trait CPUFunctions {
 
     /// Clock management function
     /// This should control the number of clock cycles each instructions takes.
-    fn clock(&mut self, bus: &mut Bus);
-    fn reset(&mut self, bus: &mut Bus);
-    fn power(&mut self, bus: &mut Bus);
-    fn interupt_req(&mut self, bus: &mut Bus);
-    fn non_maskable_interupt_req(&mut self, bus: &mut Bus);
-    fn fetch_data(&mut self, bus: &mut Bus) -> u8;
+    fn clock(&mut self, nes: &mut NesData);
+    fn reset(&mut self, nes: &mut NesData);
+    fn power(&mut self, nes: &mut NesData);
+    fn interupt_req(&mut self, nes: &mut NesData);
+    fn non_maskable_interupt_req(&mut self, nes: &mut NesData);
+    fn fetch_data(&mut self, nes: &mut NesData) -> u8;
 
 }
 pub trait CpuIO {
-    fn read(&mut self, bus: &mut Bus, addr: u16, read_only: bool) -> u8;
-    fn write(&mut self, bus: &mut Bus, addr: u16, data: u8);
+    fn read(&mut self, nes: &mut NesData, addr: u16, read_only: bool) -> u8;
+    fn write(&mut self, nes: &mut NesData, addr: u16, data: u8);
 }
 
 pub trait AddressingModes {
@@ -111,76 +111,76 @@ pub trait AddressingModes {
     /// Zero Page : fetching only the second byte knowing the first one is zero. It looks for the 1st element in the instruction matrix. Performance
     fn ZP0(&mut self) -> u8;
     /// Zero Page X : Adds only the second byte to the index range, faster adress accessing like ZP0    
-    fn ZPX(&mut self, bus: &mut Bus) -> u8;
+    fn ZPX(&mut self, nes: &mut NesData) -> u8;
     /// Zero Page Y : Adds only the second byte to the index range, faster adress accessing like ZP0    
-    fn ZPY(&mut self, bus: &mut Bus) -> u8;
+    fn ZPY(&mut self, nes: &mut NesData) -> u8;
     /// Relative : Used only for branch instructions and establish destination for the conditinal branch  
-    fn REL(&mut self, bus: &mut Bus) -> u8;
+    fn REL(&mut self, nes: &mut NesData) -> u8;
     /// Absolute : Second byte specifies the eight low order bits of the effective address while the third byte gives the high order bits. Thus making it possible to adress a wallopin 64K bytes of data
-    fn ABS(&mut self, bus: &mut Bus) -> u8;
+    fn ABS(&mut self, nes: &mut NesData) -> u8;
     /// Absolute X : Used with the X register
-    fn ABX(&mut self, bus: &mut Bus) -> u8;
+    fn ABX(&mut self, nes: &mut NesData) -> u8;
     /// Absolute Y : Used with the Y register
-    fn ABY(&mut self, bus: &mut Bus) -> u8;
+    fn ABY(&mut self, nes: &mut NesData) -> u8;
     /// Absolute Indirect : Second byte gives the low order byte of the memory location, high order in third byte.
-    fn IND(&mut self, bus: &mut Bus) -> u8;
+    fn IND(&mut self, nes: &mut NesData) -> u8;
     /// Indirect indexed X : Indirect mode with use of the X register
-    fn IZX(&mut self, bus: &mut Bus) -> u8;
+    fn IZX(&mut self, nes: &mut NesData) -> u8;
     /// Indirect indexed Y : Indirect mode with use of the Y register
-    fn IZY(&mut self, bus: &mut Bus) -> u8;
+    fn IZY(&mut self, nes: &mut NesData) -> u8;
 }
 
 pub trait OperationCodes {
-    fn ADC(&mut self, bus: &mut Bus) -> u8;
-    fn AND(&mut self, bus: &mut Bus) -> u8;
-    fn ASL(&mut self, bus: &mut Bus) -> u8;
+    fn ADC(&mut self, nes: &mut NesData) -> u8;
+    fn AND(&mut self, nes: &mut NesData) -> u8;
+    fn ASL(&mut self, nes: &mut NesData) -> u8;
     fn BCC(&mut self) -> u8;
     fn BCS(&mut self) -> u8;
     fn BEQ(&mut self) -> u8;
-    fn BIT(&mut self, bus: &mut Bus) -> u8;
+    fn BIT(&mut self, nes: &mut NesData) -> u8;
     fn BMI(&mut self) -> u8;
     fn BNE(&mut self) -> u8;
     fn BPL(&mut self) -> u8;
-    fn BRK(&mut self, bus: &mut Bus) -> u8;
+    fn BRK(&mut self, nes: &mut NesData) -> u8;
     fn BVC(&mut self) -> u8;
     fn BVS(&mut self) -> u8;
     fn CLC(&mut self) -> u8;
     fn CLD(&mut self) -> u8;
     fn CLI(&mut self) -> u8;
     fn CLV(&mut self) -> u8;
-    fn CMP(&mut self, bus: &mut Bus) -> u8;
-    fn CPX(&mut self, bus: &mut Bus) -> u8;
-    fn CPY(&mut self, bus: &mut Bus) -> u8;
-    fn DEC(&mut self, bus: &mut Bus) -> u8;
+    fn CMP(&mut self, nes: &mut NesData) -> u8;
+    fn CPX(&mut self, nes: &mut NesData) -> u8;
+    fn CPY(&mut self, nes: &mut NesData) -> u8;
+    fn DEC(&mut self, nes: &mut NesData) -> u8;
     fn DEX(&mut self) -> u8;
     fn DEY(&mut self) -> u8;
-    fn EOR(&mut self, bus: &mut Bus) -> u8;
-    fn INC(&mut self, bus: &mut Bus) -> u8;
+    fn EOR(&mut self, nes: &mut NesData) -> u8;
+    fn INC(&mut self, nes: &mut NesData) -> u8;
     fn INX(&mut self) -> u8;
     fn INY(&mut self) -> u8;
     fn JMP(&mut self) -> u8;
-    fn JSR(&mut self, bus: &mut Bus) -> u8;
-    fn LDA(&mut self, bus: &mut Bus) -> u8;
-    fn LDX(&mut self, bus: &mut Bus) -> u8;
-    fn LDY(&mut self, bus: &mut Bus) -> u8;
-    fn LSR(&mut self, bus: &mut Bus) -> u8;
+    fn JSR(&mut self, nes: &mut NesData) -> u8;
+    fn LDA(&mut self, nes: &mut NesData) -> u8;
+    fn LDX(&mut self, nes: &mut NesData) -> u8;
+    fn LDY(&mut self, nes: &mut NesData) -> u8;
+    fn LSR(&mut self, nes: &mut NesData) -> u8;
     fn NOP(&mut self) -> u8;
-    fn ORA(&mut self, bus: &mut Bus) -> u8;
-    fn PHA(&mut self, bus: &mut Bus) -> u8;
-    fn PHP(&mut self, bus: &mut Bus) -> u8;
-    fn PLA(&mut self, bus: &mut Bus) -> u8;
-    fn PLP(&mut self, bus: &mut Bus) -> u8;
-    fn ROL(&mut self, bus: &mut Bus) -> u8;
-    fn ROR(&mut self, bus: &mut Bus) -> u8;
-    fn RTI(&mut self, bus: &mut Bus) -> u8;
-    fn RTS(&mut self, bus: &mut Bus) -> u8;
-    fn SBC(&mut self, bus: &mut Bus) -> u8;
+    fn ORA(&mut self, nes: &mut NesData) -> u8;
+    fn PHA(&mut self, nes: &mut NesData) -> u8;
+    fn PHP(&mut self, nes: &mut NesData) -> u8;
+    fn PLA(&mut self, nes: &mut NesData) -> u8;
+    fn PLP(&mut self, nes: &mut NesData) -> u8;
+    fn ROL(&mut self, nes: &mut NesData) -> u8;
+    fn ROR(&mut self, nes: &mut NesData) -> u8;
+    fn RTI(&mut self, nes: &mut NesData) -> u8;
+    fn RTS(&mut self, nes: &mut NesData) -> u8;
+    fn SBC(&mut self, nes: &mut NesData) -> u8;
     fn SEC(&mut self) -> u8;
     fn SED(&mut self) -> u8;
     fn SEI(&mut self) -> u8;
-    fn STA(&mut self, bus: &mut Bus) -> u8;
-    fn STX(&mut self, bus: &mut Bus) -> u8;
-    fn STY(&mut self, bus: &mut Bus) -> u8;
+    fn STA(&mut self, nes: &mut NesData) -> u8;
+    fn STX(&mut self, nes: &mut NesData) -> u8;
+    fn STY(&mut self, nes: &mut NesData) -> u8;
     fn TAX(&mut self) -> u8;
     fn TAY(&mut self) -> u8;
     fn TSX(&mut self) -> u8;
@@ -216,12 +216,12 @@ impl OLC6502 {
 }
 
 impl CpuIO for OLC6502 {
-    fn read(&mut self, bus: &mut Bus, addr: u16, read_only: bool) -> u8 {
+    fn read(&mut self, nes: &mut NesData, addr: u16, read_only: bool) -> u8 {
         //TODO: check if the address size is in the correct
-        bus.read(addr, read_only)
+        nes.read(addr, read_only)
     }
-    fn write(&mut self, bus: &mut Bus, addr: u16, data: u8) {
-        bus.write(addr, data);
+    fn write(&mut self, nes: &mut NesData, addr: u16, data: u8) {
+        nes.write(addr, data);
     }
 }
 
@@ -241,31 +241,31 @@ impl AddressingModes for OLC6502 {
         self.addr_abs &= 0x00FF;
         0u8
     }
-    fn ZPX(&mut self, bus: &mut Bus) -> u8 {
-        self.addr_abs = (self.read(bus, self.pc, true) + self.x).into();
+    fn ZPX(&mut self, nes: &mut NesData) -> u8 {
+        self.addr_abs = (self.read(nes, self.pc, true) + self.x).into();
         self.pc += 1;
         self.addr_abs &= 0x00FF;
         0u8
     }
-    fn ZPY(&mut self, bus: &mut Bus) -> u8 {
-        self.addr_abs = (self.read(bus, self.pc, true) + self.y).into();
+    fn ZPY(&mut self, nes: &mut NesData) -> u8 {
+        self.addr_abs = (self.read(nes, self.pc, true) + self.y).into();
         self.pc += 1;
         self.addr_abs &= 0x00FF;
         0u8
     }
 
-    fn ABS(&mut self, bus: &mut Bus) -> u8 {
-        let lo: u16 = self.read(bus, self.pc, true).into();
+    fn ABS(&mut self, nes: &mut NesData) -> u8 {
+        let lo: u16 = self.read(nes, self.pc, true).into();
         self.pc += 1;
-        let hi: u16 = self.read(bus, self.pc, true).into();
+        let hi: u16 = self.read(nes, self.pc, true).into();
         self.pc += 1;
         self.addr_abs = (hi << 8) | lo;
         0u8
     }
-    fn ABX(&mut self, bus: &mut Bus) -> u8 {
-        let lo: u16 = self.read(bus, self.pc, true).into();
+    fn ABX(&mut self, nes: &mut NesData) -> u8 {
+        let lo: u16 = self.read(nes, self.pc, true).into();
         self.pc += 1;
-        let hi: u16 = self.read(bus, self.pc, true).into();
+        let hi: u16 = self.read(nes, self.pc, true).into();
         self.addr_abs = (hi << 8) | lo;
         self.addr_abs += self.x as u16;
 
@@ -274,10 +274,10 @@ impl AddressingModes for OLC6502 {
             true => 1u8,
         }
     }
-    fn ABY(&mut self, bus: &mut Bus) -> u8 {
-        let lo: u16 = self.read(bus, self.pc, true).into();
+    fn ABY(&mut self, nes: &mut NesData) -> u8 {
+        let lo: u16 = self.read(nes, self.pc, true).into();
         self.pc += 1;
-        let hi: u16 = self.read(bus, self.pc, true).into();
+        let hi: u16 = self.read(nes, self.pc, true).into();
 
         self.addr_abs = (hi << 8) | lo;
         self.addr_abs += self.y as u16;
@@ -287,41 +287,41 @@ impl AddressingModes for OLC6502 {
             true => 1u8,
         }
     }
-    fn IND(&mut self, bus: &mut Bus) -> u8 {
-        let ptr_lo: u16 = self.read(bus, self.pc, true).into();
+    fn IND(&mut self, nes: &mut NesData) -> u8 {
+        let ptr_lo: u16 = self.read(nes, self.pc, true).into();
         self.pc += 1;
-        let ptr_hi: u16 = self.read(bus, self.pc, true).into();
+        let ptr_hi: u16 = self.read(nes, self.pc, true).into();
         self.pc += 1;
         let ptr = (ptr_hi << 8) | ptr_lo;
         self.addr_abs = match ptr_lo == 0x00FF {
             true => {
-                ((self.read(bus, ptr & 0xFF00, true) as u16) << 8)
-                    | self.read(bus, ptr, true) as u16
+                ((self.read(nes, ptr & 0xFF00, true) as u16) << 8)
+                    | self.read(nes, ptr, true) as u16
             }
             false => {
-                ((self.read(bus, ptr + 1, true) as u16) << 8) | self.read(bus, ptr, true) as u16
+                ((self.read(nes, ptr + 1, true) as u16) << 8) | self.read(nes, ptr, true) as u16
             }
         };
         0u8
     }
-    fn IZX(&mut self, bus: &mut Bus) -> u8 {
-        let t: u16 = self.read(bus, self.pc, true).into();
+    fn IZX(&mut self, nes: &mut NesData) -> u8 {
+        let t: u16 = self.read(nes, self.pc, true).into();
         self.pc += 1;
 
-        let lo: u16 = self.read(bus, (t + (self.x as u16)) & 0x00FF, true).into();
+        let lo: u16 = self.read(nes, (t + (self.x as u16)) & 0x00FF, true).into();
         let hi: u16 = self
-            .read(bus, (t + ((self.x + 1) as u16)) & 0x00FF, true)
+            .read(nes, (t + ((self.x + 1) as u16)) & 0x00FF, true)
             .into();
         self.addr_abs = (hi << 8) | lo as u16;
 
         0u8
     }
-    fn IZY(&mut self, bus: &mut Bus) -> u8 {
-        let t: u16 = self.read(bus, self.pc, true).into();
+    fn IZY(&mut self, nes: &mut NesData) -> u8 {
+        let t: u16 = self.read(nes, self.pc, true).into();
         self.pc += 1;
 
-        let lo: u16 = self.read(bus, t & 0x00FF, true).into();
-        let hi: u16 = self.read(bus, (t + 1) & 0x00FF, true).into();
+        let lo: u16 = self.read(nes, t & 0x00FF, true).into();
+        let hi: u16 = self.read(nes, (t + 1) & 0x00FF, true).into();
         self.addr_abs = ((hi << 8) | lo) + self.y as u16;
 
         match self.addr_abs & 0xFF00 != hi {
@@ -329,8 +329,8 @@ impl AddressingModes for OLC6502 {
             true => 0u8,
         }
     }
-    fn REL(&mut self, bus: &mut Bus) -> u8 {
-        self.addr_rel = self.read(bus, self.pc, true).into();
+    fn REL(&mut self, nes: &mut NesData) -> u8 {
+        self.addr_rel = self.read(nes, self.pc, true).into();
         self.pc += 1;
         if self.addr_rel & 0x80 != 0 {
             self.addr_rel |= 0xFF00;
@@ -341,58 +341,58 @@ impl AddressingModes for OLC6502 {
 }
 
 impl CpuApplyFunctions for OLC6502 {
-    fn apply_op(&mut self, instruction: INSTRUCTION, bus: &mut Bus) -> u8 {
+    fn apply_op(&mut self, instruction: INSTRUCTION, nes: &mut NesData) -> u8 {
         match instruction.opcode.as_str() {
-            "ADC" => self.ADC(bus),
-            "AND" => self.AND(bus),
-            "ASL" => self.ASL(bus),
+            "ADC" => self.ADC(nes),
+            "AND" => self.AND(nes),
+            "ASL" => self.ASL(nes),
             "BCC" => self.BCC(),
             "BCS" => self.BCS(),
             "BEQ" => self.BEQ(),
-            "BIT" => self.BIT(bus),
+            "BIT" => self.BIT(nes),
             "BMI" => self.BMI(),
             "BNE" => self.BNE(),
             "BPL" => self.BPL(),
-            "BRK" => self.BRK(bus),
+            "BRK" => self.BRK(nes),
             "BVC" => self.BVC(),
             "BVS" => self.BVS(),
             "CLC" => self.CLC(),
             "CLD" => self.CLD(),
             "CLI" => self.CLI(),
             "CLV" => self.CLV(),
-            "CMP" => self.CMP(bus),
-            "CPX" => self.CPX(bus),
-            "CPY" => self.CPY(bus),
-            "DEC" => self.DEC(bus),
+            "CMP" => self.CMP(nes),
+            "CPX" => self.CPX(nes),
+            "CPY" => self.CPY(nes),
+            "DEC" => self.DEC(nes),
             "DEX" => self.DEX(),
             "DEY" => self.DEY(),
-            "EOR" => self.EOR(bus),
-            "INC" => self.INC(bus),
+            "EOR" => self.EOR(nes),
+            "INC" => self.INC(nes),
             "INX" => self.INX(),
             "INY" => self.INY(),
             "JMP" => self.JMP(),
-            "JSR" => self.JSR(bus),
-            "LDA" => self.LDA(bus),
-            "LDX" => self.LDX(bus),
-            "LDY" => self.LDY(bus),
-            "LSR" => self.LSR(bus),
+            "JSR" => self.JSR(nes),
+            "LDA" => self.LDA(nes),
+            "LDX" => self.LDX(nes),
+            "LDY" => self.LDY(nes),
+            "LSR" => self.LSR(nes),
             "NOP" => self.NOP(),
-            "ORA" => self.ORA(bus),
-            "PHA" => self.PHA(bus),
-            "PHP" => self.PHP(bus),
-            "PLA" => self.PLA(bus),
-            "PLP" => self.PLP(bus),
-            "ROL" => self.ROL(bus),
-            "ROR" => self.ROR(bus),
-            "RTI" => self.RTI(bus),
-            "RTS" => self.RTS(bus),
-            "SBC" => self.SBC(bus),
+            "ORA" => self.ORA(nes),
+            "PHA" => self.PHA(nes),
+            "PHP" => self.PHP(nes),
+            "PLA" => self.PLA(nes),
+            "PLP" => self.PLP(nes),
+            "ROL" => self.ROL(nes),
+            "ROR" => self.ROR(nes),
+            "RTI" => self.RTI(nes),
+            "RTS" => self.RTS(nes),
+            "SBC" => self.SBC(nes),
             "SEC" => self.SEC(),
             "SED" => self.SED(),
             "SEI" => self.SEI(),
-            "STA" => self.STA(bus),
-            "STX" => self.STX(bus),
-            "STY" => self.STY(bus),
+            "STA" => self.STA(nes),
+            "STX" => self.STX(nes),
+            "STY" => self.STY(nes),
             "TAX" => self.TAX(),
             "TAY" => self.TAY(),
             "TSX" => self.TSX(),
@@ -402,20 +402,20 @@ impl CpuApplyFunctions for OLC6502 {
             _ => self.XXX(), // Unintended operations
         }
     }
-    fn apply_addressing_mode(&mut self, instruction: INSTRUCTION, bus: &mut Bus) -> u8 {
+    fn apply_addressing_mode(&mut self, instruction: INSTRUCTION, nes: &mut NesData) -> u8 {
         match instruction.addr_mode.as_str() {
             "IMP" => self.IMP(),
             "IMM" => self.IMM(),
             "ZP0" => self.ZP0(),
-            "ZPX" => self.ZPX(bus),
-            "ZPY" => self.ZPY(bus),
-            "REL" => self.REL(bus),
-            "ABS" => self.ABS(bus),
-            "ABX" => self.ABX(bus),
-            "ABY" => self.ABY(bus),
-            "IND" => self.IND(bus),
-            "IZX" => self.IZX(bus),
-            "IZY" => self.IZY(bus),
+            "ZPX" => self.ZPX(nes),
+            "ZPY" => self.ZPY(nes),
+            "REL" => self.REL(nes),
+            "ABS" => self.ABS(nes),
+            "ABX" => self.ABX(nes),
+            "ABY" => self.ABY(nes),
+            "IND" => self.IND(nes),
+            "IZX" => self.IZX(nes),
+            "IZY" => self.IZY(nes),
             _ => 0u8,
         }
     }
@@ -423,8 +423,8 @@ impl CpuApplyFunctions for OLC6502 {
 
 impl OperationCodes for OLC6502 {
     /// Add with carry, Done 
-    fn ADC(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn ADC(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         let tmp: u16 = (self.a + self.fetched_data + FLAGS6502::C as u8) as u16;
         self.set_flag(FLAGS6502::C, tmp > 255);
         self.set_flag(FLAGS6502::Z, tmp & 0x00FF == 0);
@@ -437,16 +437,16 @@ impl OperationCodes for OLC6502 {
         1u8
     }
     /// Bitwise AND, Done
-    fn AND(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn AND(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         self.a = self.a & self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.a == 0x00);
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         1u8
     }
     /// Arithmetic Shift Left, Done
-    fn ASL(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn ASL(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         self.a = self.fetched_data;
         self.set_flag(FLAGS6502::C,self.a.get_high_bit());
         self.a = self.a << 1;
@@ -489,9 +489,9 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     /// Bit test, Done (by hand)
-    fn BIT(&mut self, bus: &mut Bus) -> u8 {
+    fn BIT(&mut self, nes: &mut NesData) -> u8 {
         //TODO: Check if the opcode is the 89 version
-        self.fetch_data(bus);
+        self.fetch_data(nes);
         let result = self.a & self.fetched_data;
         self.set_flag(FLAGS6502::Z, result == 0);
         self.set_flag(FLAGS6502::V, result.get_next_bit());
@@ -535,21 +535,21 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     /// Break, Done
-    fn BRK(&mut self, bus: &mut Bus) -> u8 {
+    fn BRK(&mut self, nes: &mut NesData) -> u8 {
         self.set_flag(FLAGS6502::B, true);
         self.stkp = self.stkp.checked_add(1).unwrap_or(0);
         self.write(
-            bus,
+            nes,
             0x0100 + self.stkp as u16,
             (self.pc >> 8 & 0x00FF) as u8,
         );
         self.stkp = self.stkp.checked_add(1).unwrap_or(0);
-        self.write(bus, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
+        self.write(nes, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
         self.stkp += 1;
-        self.write(bus, 0x0100 + self.stkp as u16, self.status);
+        self.write(nes, 0x0100 + self.stkp as u16, self.status);
         self.addr_abs = 0xFFFE;
-        let lo = self.read(bus, self.addr_abs + 0, true) as u16;
-        let hi = self.read(bus, self.addr_abs + 1, true) as u16;
+        let lo = self.read(nes, self.addr_abs + 0, true) as u16;
+        let hi = self.read(nes, self.addr_abs + 1, true) as u16;
         self.pc = hi << 8 | lo;
         self.set_flag(FLAGS6502::B, true);
         0u8
@@ -599,9 +599,9 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     /// Compare, Done
-    fn CMP(&mut self, bus: &mut Bus) -> u8 {
+    fn CMP(&mut self, nes: &mut NesData) -> u8 {
 
-        self.fetch_data(bus);
+        self.fetch_data(nes);
         let value = self.a - self.fetched_data;
         self.set_flag(FLAGS6502::N, !value.get_high_bit());
         self.set_flag(FLAGS6502::Z, self.a == value);
@@ -609,8 +609,8 @@ impl OperationCodes for OLC6502 {
         1u8
     }
     /// Compare X register, Done
-    fn CPX(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn CPX(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         let result = self.x - self.fetched_data;
         self.set_flag(FLAGS6502::N, !result.get_high_bit());
         self.set_flag(FLAGS6502::Z, result == 0);
@@ -618,8 +618,8 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     /// Compare Y register, Done
-    fn CPY(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn CPY(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         let result = self.y.checked_sub(self.fetched_data).unwrap_or(self.fetched_data-self.y);
         
         self.set_flag(FLAGS6502::N, !result.get_high_bit());
@@ -628,10 +628,10 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     /// Decrement value, Done
-    fn DEC(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn DEC(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         let tmp = self.fetched_data - 1;
-        self.write(bus, self.addr_rel, tmp);
+        self.write(nes, self.addr_rel, tmp);
         self.set_flag(FLAGS6502::Z, tmp == 0);
         self.set_flag(FLAGS6502::N, !tmp.get_high_bit());
         
@@ -652,18 +652,18 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     /// Exclusive Or
-    fn EOR(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn EOR(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         self.a ^= self.fetched_data;
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         self.set_flag(FLAGS6502::Z, self.a == 0);
         1u8
     }
     /// Increment data
-    fn INC(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn INC(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         let temp = self.fetched_data +1;
-        self.write(bus, self.addr_abs, temp);
+        self.write(nes, self.addr_abs, temp);
         self.set_flag(FLAGS6502::N, !temp.get_high_bit());
         self.set_flag(FLAGS6502::Z, temp == 0);
         0u8
@@ -688,19 +688,19 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     /// Jump to sub routine, push current program counter to stack
-    fn JSR(&mut self, bus: &mut Bus) -> u8 {
+    fn JSR(&mut self, nes: &mut NesData) -> u8 {
         self.pc -=1;
-        self.write(bus, 0x0100 + self.stkp as u16, self.pc.get_high_byte());
+        self.write(nes, 0x0100 + self.stkp as u16, self.pc.get_high_byte());
         self.stkp-=1;
-        self.write(bus, 0x0100 + self.stkp as u16, self.pc.get_high_byte());
+        self.write(nes, 0x0100 + self.stkp as u16, self.pc.get_high_byte());
         self.stkp-=1;
         self.pc = self.addr_abs;
         0u8
     }
     /// Load data to the accumumator
-    fn LDA(&mut self, bus: &mut Bus) -> u8 {
+    fn LDA(&mut self, nes: &mut NesData) -> u8 {
         
-        self.fetch_data(bus);
+        self.fetch_data(nes);
         
         self.a = self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.a == 0);
@@ -708,30 +708,30 @@ impl OperationCodes for OLC6502 {
         1u8
     }
     /// Load data to X register
-    fn LDX(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn LDX(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         self.x = self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.x == 0);
         self.set_flag(FLAGS6502::N, !self.x.get_high_bit());
         1u8
     }
     /// Load data to Y register
-    fn LDY(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn LDY(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         self.y = self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.y == 0);
         self.set_flag(FLAGS6502::N, !self.y.get_high_bit());
         1u8
     }
     /// Logical shift right
-    fn LSR(&mut self, bus: &mut Bus) -> u8{
-        self.fetch_data(bus);
-        let mut tmp = self.read(bus, self.addr_abs, true);
+    fn LSR(&mut self, nes: &mut NesData) -> u8{
+        self.fetch_data(nes);
+        let mut tmp = self.read(nes, self.addr_abs, true);
         self.set_flag(FLAGS6502::C, tmp.get_low_bit());
         tmp >>= 1;
         match self.lookup[self.curr_opcode as usize].addr_mode.as_str(){
             "IMP" => self.a = tmp,
-            _ => self.write(bus, self.addr_abs, tmp)
+            _ => self.write(nes, self.addr_abs, tmp)
         }
         
         self.set_flag(FLAGS6502::Z, tmp == 0);
@@ -747,45 +747,45 @@ impl OperationCodes for OLC6502 {
         }
     }
     /// Inclusive Or with accumulator
-    fn ORA(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn ORA(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         self.a |= self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.a == 0);
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         1u8
     }
     /// Push accumulator, Done
-    fn PHA(&mut self, bus: &mut Bus) -> u8 {
-        self.write(bus, 0x0100 + self.stkp as u16, self.a);
+    fn PHA(&mut self, nes: &mut NesData) -> u8 {
+        self.write(nes, 0x0100 + self.stkp as u16, self.a);
         self.stkp -= 1;
         0u8
     }
     /// Push status in the stack
-    fn PHP(&mut self, bus: &mut Bus) -> u8 {
-        self.write(bus, 0x0100 + self.stkp as u16, self.status | 0x10);
+    fn PHP(&mut self, nes: &mut NesData) -> u8 {
+        self.write(nes, 0x0100 + self.stkp as u16, self.status | 0x10);
         self.stkp-=1;
         self.set_flag(FLAGS6502::B, false);
         self.set_flag(FLAGS6502::U, false);
         0u8
     }
     /// Pull accumulator, Done
-    fn PLA(&mut self, bus: &mut Bus) -> u8 {
+    fn PLA(&mut self, nes: &mut NesData) -> u8 {
         self.stkp += 1;
-        self.a = self.read(bus, 0x0100 + self.stkp as u16, true);
+        self.a = self.read(nes, 0x0100 + self.stkp as u16, true);
         self.set_flag(FLAGS6502::Z, self.a == 0);
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         0u8
     }
     // TODO: Check this one
     /// Pop status from the stack
-    fn PLP(&mut self, bus: &mut Bus) -> u8 {
+    fn PLP(&mut self, nes: &mut NesData) -> u8 {
         self.stkp += 1;
-        self.status = self.read(bus, 0x0100 + self.stkp as u16, true);
+        self.status = self.read(nes, 0x0100 + self.stkp as u16, true);
         0u8
     }
     /// Rotate on left
-    fn ROL(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn ROL(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         let tmp = (self.fetched_data as u16) << 1 | self.get_flag(FLAGS6502::C) as u16;
         
         self.set_flag(FLAGS6502::C, tmp.get_nth_bit(8));
@@ -794,15 +794,15 @@ impl OperationCodes for OLC6502 {
 
         match self.lookup[self.curr_opcode as usize].addr_mode.as_str() {
             "IMP" => self.a = tmp.get_low_byte(),
-            _ => self.write(bus, self.addr_abs, tmp.get_low_byte())
+            _ => self.write(nes, self.addr_abs, tmp.get_low_byte())
         }
         
         0u8
     }
     /// Rotate on right
-    fn ROR(&mut self, bus: &mut Bus) -> u8 {
+    fn ROR(&mut self, nes: &mut NesData) -> u8 {
 
-        self.fetch_data(bus);
+        self.fetch_data(nes);
         let mut tmp = self.fetched_data;
         self.set_flag(FLAGS6502::C, tmp.get_low_bit());
         tmp >>= 1;
@@ -812,35 +812,35 @@ impl OperationCodes for OLC6502 {
 
         match self.lookup[self.curr_opcode as usize].addr_mode.as_str() {
             "IMP" => self.a = tmp,
-            _ => self.write(bus, self.addr_abs, tmp)
+            _ => self.write(nes, self.addr_abs, tmp)
         }
         
         0u8
     }
     /// Return from interupt, Done
-    fn RTI(&mut self, bus: &mut Bus) -> u8 {
+    fn RTI(&mut self, nes: &mut NesData) -> u8 {
         self.stkp += 1;
-        self.status = self.read(bus, 0x0100 + self.stkp as u16, true);
+        self.status = self.read(nes, 0x0100 + self.stkp as u16, true);
         self.status &= !(FLAGS6502::B as u8);
         self.status &= !(FLAGS6502::U as u8);
         self.stkp += 1;
-        self.pc = self.read(bus, 0x0100 + self.stkp as u16, true) as u16;
+        self.pc = self.read(nes, 0x0100 + self.stkp as u16, true) as u16;
         self.stkp += 1;
-        self.pc |= (self.read(bus, 0x0100 + self.stkp as u16, true) as u16) << 8;
+        self.pc |= (self.read(nes, 0x0100 + self.stkp as u16, true) as u16) << 8;
         0u8
     }
     /// Return from subroutine, Pop the program counter from the stack
-    fn RTS(&mut self, bus: &mut Bus) -> u8 {
+    fn RTS(&mut self, nes: &mut NesData) -> u8 {
         self.stkp+=1;
-        let hi = (self.read(bus, 0x0100 + self.stkp as u16, true) as u16) << 8;
-        let lo = self.read(bus, 0x0100 + (self.stkp + 1) as u16, true) as u16;
+        let hi = (self.read(nes, 0x0100 + self.stkp as u16, true) as u16) << 8;
+        let lo = self.read(nes, 0x0100 + (self.stkp + 1) as u16, true) as u16;
         self.pc=hi+lo;
 
         0u8
     }
     /// Substract with carry, Done
-    fn SBC(&mut self, bus: &mut Bus) -> u8 {
-        self.fetch_data(bus);
+    fn SBC(&mut self, nes: &mut NesData) -> u8 {
+        self.fetch_data(nes);
         let value = self.fetched_data ^ 0x00FF;
         let tmp1 = self.a.add_overflow(value);
         let tmp = tmp1.add_overflow(FLAGS6502::C as u8) as u16;
@@ -870,18 +870,18 @@ impl OperationCodes for OLC6502 {
         0u8
     }
     /// Store accumulator in memory
-    fn STA(&mut self, bus: &mut Bus) -> u8 {
-        self.write(bus, self.addr_abs, self.a);
+    fn STA(&mut self, nes: &mut NesData) -> u8 {
+        self.write(nes, self.addr_abs, self.a);
         0u8
     }
     /// Store X register in memory
-    fn STX(&mut self, bus: &mut Bus) -> u8 {
-        self.write(bus, self.addr_abs, self.x);
+    fn STX(&mut self, nes: &mut NesData) -> u8 {
+        self.write(nes, self.addr_abs, self.x);
         0u8
     }
     /// Store Y register in memory
-    fn STY(&mut self, bus: &mut Bus) -> u8 {
-        self.write(bus, self.addr_abs, self.y);
+    fn STY(&mut self, nes: &mut NesData) -> u8 {
+        self.write(nes, self.addr_abs, self.y);
         0u8
     }
     /// Transfer Accumulator to X
@@ -926,19 +926,19 @@ impl OperationCodes for OLC6502 {
 }
 
 impl CPUFunctions for OLC6502 {
-    fn clock(&mut self, bus: &mut Bus) {
+    fn clock(&mut self, nes: &mut NesData) {
         if self.cycles == 0 {
-            self.curr_opcode = self.read(bus, self.pc, true);
+            self.curr_opcode = self.read(nes, self.pc, true);
             
             self.set_flag(FLAGS6502::U, true);
             
             self.cycles = self.lookup[self.curr_opcode as usize].cycles;
             
             let additionnal_cycle_1 =
-                self.apply_addressing_mode(self.lookup[self.curr_opcode as usize].clone(), bus);
+                self.apply_addressing_mode(self.lookup[self.curr_opcode as usize].clone(), nes);
             self.pc += 1;
             let additionnal_cycle_2 =
-                self.apply_op(self.lookup[self.curr_opcode as usize].clone(), bus);
+                self.apply_op(self.lookup[self.curr_opcode as usize].clone(), nes);
                 
             self.cycles += additionnal_cycle_1 & additionnal_cycle_2;
             self.set_flag(FLAGS6502::U, true);
@@ -959,30 +959,30 @@ impl CPUFunctions for OLC6502 {
             false => self.status &= !(f as u8),
         }
     }
-    fn reset(&mut self, bus: &mut Bus) {
+    fn reset(&mut self, nes: &mut NesData) {
         self.a = 0;
         self.x = 0;
         self.y = 0;
         self.stkp = 0xFD;
         self.status = 0x00 | FLAGS6502::U as u8;
         self.addr_abs = 0xFFFC;
-        let lo = self.read(bus, self.addr_abs, true) as u16;
-        let hi = self.read(bus, self.addr_abs + 1, true) as u16;
+        let lo = self.read(nes, self.addr_abs, true) as u16;
+        let hi = self.read(nes, self.addr_abs + 1, true) as u16;
         self.pc = (hi << 8) | lo;
         self.addr_abs = 0;
         self.addr_rel = 0;
         self.fetched_data = 0;
         self.cycles = 8;
     }
-    fn power(&mut self, bus: &mut Bus){
+    fn power(&mut self, nes: &mut NesData){
         self.a = 0;
         self.x = 0;
         self.y = 0;
         self.stkp = 0x00;
         self.status = 0x00 | FLAGS6502::U as u8;
         self.addr_abs = 0xFFFC;
-        let lo = self.read(bus, self.addr_abs, true) as u16;
-        let hi = self.read(bus, self.addr_abs + 1, true) as u16;
+        let lo = self.read(nes, self.addr_abs, true) as u16;
+        let hi = self.read(nes, self.addr_abs + 1, true) as u16;
         self.pc = (hi << 8) | lo;
         
         self.addr_abs = 0;
@@ -990,51 +990,51 @@ impl CPUFunctions for OLC6502 {
         self.fetched_data = 0;
         self.cycles = 3;
     }
-    fn interupt_req(&mut self, bus: &mut Bus) {
+    fn interupt_req(&mut self, nes: &mut NesData) {
         if self.get_flag(FLAGS6502::I) != 0 {
             self.write(
-                bus,
+                nes,
                 0x0100 + self.stkp as u16,
                 ((self.pc >> 8) & 0x00FF) as u8,
             );
             self.stkp -= 1;
-            self.write(bus, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
+            self.write(nes, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
             self.stkp -= 1;
             self.set_flag(FLAGS6502::B, false);
             self.set_flag(FLAGS6502::U, true);
             self.set_flag(FLAGS6502::I, true);
-            self.write(bus, 0x0100 + self.stkp as u16, self.status);
+            self.write(nes, 0x0100 + self.stkp as u16, self.status);
             self.stkp -= 1;
             self.addr_abs = 0xFFFE;
-            let lo = self.read(bus, self.addr_abs + 0, true) as u16;
-            let hi = self.read(bus, self.addr_abs + 1, true) as u16;
+            let lo = self.read(nes, self.addr_abs + 0, true) as u16;
+            let hi = self.read(nes, self.addr_abs + 1, true) as u16;
             self.pc = hi << 8 | lo;
             self.cycles = 7;
         }
     }
-    fn fetch_data(&mut self, bus: &mut Bus) -> u8 {
+    fn fetch_data(&mut self, nes: &mut NesData) -> u8 {
         if self.lookup[self.curr_opcode as usize].addr_mode != "IMP" {
-            self.fetched_data = self.read(bus, self.addr_abs, true);
+            self.fetched_data = self.read(nes, self.addr_abs, true);
         }
         self.fetched_data
     }
-    fn non_maskable_interupt_req(&mut self, bus: &mut Bus) {
+    fn non_maskable_interupt_req(&mut self, nes: &mut NesData) {
         self.write(
-            bus,
+            nes,
             0x0100 + self.stkp as u16,
             ((self.pc >> 8) & 0x00FF) as u8,
         );
         self.stkp -= 1;
-        self.write(bus, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
+        self.write(nes, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
         self.stkp -= 1;
         self.set_flag(FLAGS6502::B, false);
         self.set_flag(FLAGS6502::U, true);
         self.set_flag(FLAGS6502::I, true);
-        self.write(bus, 0x0100 + self.stkp as u16, self.status);
+        self.write(nes, 0x0100 + self.stkp as u16, self.status);
         self.stkp -= 1;
         self.addr_abs = 0xFFFA;
-        let lo = self.read(bus, self.addr_abs + 0, true) as u16;
-        let hi = self.read(bus, self.addr_abs + 1, true) as u16;
+        let lo = self.read(nes, self.addr_abs + 0, true) as u16;
+        let hi = self.read(nes, self.addr_abs + 1, true) as u16;
         self.pc = hi << 8 | lo;
         self.cycles = 8;
     }

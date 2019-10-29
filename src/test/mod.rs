@@ -5,7 +5,7 @@ use std::io::prelude::*;
 
 use super::*;
 
-pub fn test_cpu(cpu : &mut OLC6502, bus : &mut Bus, depth : Option<usize> ){
+pub fn test_cpu(cpu : &mut OLC6502, nes : &mut NesData, depth : Option<usize> ){
     let dpth = match depth{
         Some(x) => x,
         None => 8
@@ -16,22 +16,22 @@ pub fn test_cpu(cpu : &mut OLC6502, bus : &mut Bus, depth : Option<usize> ){
     
     let term = Term::stdout();
     // Set the reset vector
-    bus.ram[0xFFFC] = 0x00;
-    bus.ram[0xFFFD] = 0x80;
+    nes.ram[0xFFFC] = 0x00;
+    nes.ram[0xFFFD] = 0x80;
     
     // get the Assembly code
     let code : Vec<u8> =  test_code();
     // Writes the code in the ram with offset 0x8000
     for i in 0..code.len(){
-        bus.ram[0x8000+i] = code[i];
+        nes.ram[0x8000+i] = code[i];
     }
-    cpu.power(bus);
+    cpu.power(nes);
     while input.trim() != "quit" {
 
-        cpu.clock(bus);
+        cpu.clock(nes);
         println!("{}\n{}\n\n\n\nCode :\n\n{}",  display_registers(cpu),
-                        display_ram(bus.ram.to_vec(), 0x0200 , 16, dpth),
-                        display_code(bus.ram.to_vec(), 16, dpth));
+                        display_ram(nes.ram.to_vec(), 0x0200 , 16, dpth),
+                        display_code(nes.ram.to_vec(), 16, dpth));
         io::stdin().read_line(&mut input).unwrap();
         term.clear_screen().unwrap();
     }
