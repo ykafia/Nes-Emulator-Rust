@@ -2,7 +2,7 @@
 
 use super::bus::*;
 use super::instruction_generator::get_lookup_list;
-
+use super::super::utils::*;
 //TODO: Implement the rest of the cpu instructions
 
 /// Struct representing the 6502 cpu's data
@@ -231,7 +231,8 @@ impl AddressingModes for OLC6502 {
         0u8
     }
     fn IMM(&mut self) -> u8 {
-        self.addr_abs = self.pc + 1;
+        self.pc+=1;
+        self.addr_abs = self.pc;
         0u8
     }
     fn ZP0(&mut self) -> u8 {
@@ -698,8 +699,10 @@ impl OperationCodes for OLC6502 {
     }
     /// Load data to the accumumator
     fn LDA(&mut self, bus: &mut Bus) -> u8 {
+        
+        println!("Program count is {:02X}\nData address is {:04X}",self.pc,self.addr_abs);
         self.fetch_data(bus);
-        println!("Fetched data is {:02X}",self.fetched_data);
+        
         self.a = self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.a == 0);
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
@@ -840,8 +843,8 @@ impl OperationCodes for OLC6502 {
     fn SBC(&mut self, bus: &mut Bus) -> u8 {
         self.fetch_data(bus);
         let value = self.fetched_data ^ 0x00FF;
-
-        let tmp: u16 = (self.a + value + FLAGS6502::C as u8) as u16;
+        let tmp1 = self.a.add_overflow(value);
+        let tmp = tmp1.add_overflow(FLAGS6502::C as u8) as u16;
         self.set_flag(FLAGS6502::C, tmp > 255);
         self.set_flag(FLAGS6502::Z, tmp & 0x00FF == 0);
         self.set_flag(FLAGS6502::N, tmp.get_low_byte().get_high_bit());
@@ -850,6 +853,7 @@ impl OperationCodes for OLC6502 {
             !(self.a ^ self.fetched_data) as u16 & (self.a as u16 ^ tmp) & 0x0080 != 0,
         );
         self.a = (tmp & 0x00FF) as u8;
+        println!("SBC : {:X} - {:X}",self.a,value);
         1u8
     }
     /// Set carry flag to 1
@@ -927,15 +931,20 @@ impl CPUFunctions for OLC6502 {
     fn clock(&mut self, bus: &mut Bus) {
         if self.cycles == 0 {
             self.curr_opcode = self.read(bus, self.pc, true);
-            self.pc += 1;
+            
+            self.set_flag(FLAGS6502::U, true);
+            
+            self.cycles = self.lookup[self.curr_opcode as usize].cycles;
+            
             let additionnal_cycle_1 =
                 self.apply_addressing_mode(self.lookup[self.curr_opcode as usize].clone(), bus);
+            self.pc += 1;
             let additionnal_cycle_2 =
                 self.apply_op(self.lookup[self.curr_opcode as usize].clone(), bus);
-            
+                
             self.cycles += additionnal_cycle_1 & additionnal_cycle_2;
+            self.set_flag(FLAGS6502::U, true);
             println!("Applied : {}",self.lookup[self.curr_opcode as usize].opcode);
-            println!("With opcode number : {:x}",self.curr_opcode);
         }
         else{
             self.cycles -= 1;
@@ -979,6 +988,7 @@ impl CPUFunctions for OLC6502 {
         let lo = self.read(bus, self.addr_abs, true) as u16;
         let hi = self.read(bus, self.addr_abs + 1, true) as u16;
         self.pc = (hi << 8) | lo;
+        
         self.addr_abs = 0;
         self.addr_rel = 0;
         self.fetched_data = 0;
@@ -1033,52 +1043,4 @@ impl CPUFunctions for OLC6502 {
         self.pc = hi << 8 | lo;
         self.cycles = 8;
     }
-}
-
-trait BitGet{
-    fn get_high_bit(&self) -> bool;
-    fn get_next_bit(&self) -> bool;
-    fn get_low_bit(&self) -> bool;
-    fn get_nth_bit(&self, n : u8) -> bool;
-}
-trait ByteGet{
-    fn get_high_byte(&self) -> u8;
-    fn get_low_byte(&self) -> u8;
-}
-impl BitGet for u8{
-    fn get_high_bit(&self) -> bool{
-        (self & 0x80) >> 7 == 1
-    }
-    fn get_next_bit(&self) -> bool{
-        (self & 0x40) >> 6 == 1
-    }
-    fn get_low_bit(&self) -> bool{
-        (self & 0x01) == 1
-    }
-    fn get_nth_bit(&self, n : u8) -> bool {
-        ((self >> 7-n) & 0x01) == 1 
-    }
-}
-impl BitGet for u16{
-    fn get_high_bit(&self) -> bool{
-        (self & 0x8000) >> 15 == 1
-    }
-    fn get_next_bit(&self) -> bool{
-        (self & 0x4000) >> 14 == 1
-    }
-    fn get_low_bit(&self) -> bool{
-        (self & 0x0001) == 1
-    }
-    fn get_nth_bit(&self, n : u8) -> bool {
-        ((self >> 15-n) & 0x01) == 1 
-    }
-}
-impl ByteGet for u16{
-    fn get_low_byte(&self) -> u8{
-        (self & 0x00FF) as u8
-    }
-    fn get_high_byte(&self) -> u8{
-        ((self & 0xFF00) >> 8) as u8
-    }
-
 }

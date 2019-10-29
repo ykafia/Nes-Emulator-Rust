@@ -3,7 +3,6 @@ mod utils;
 mod test;
 use components::*;
 use test::*;
-// use utils::*;
 
 fn main() {
     let mut bus = Bus::new();
