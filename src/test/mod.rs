@@ -16,14 +16,14 @@ pub fn test_cpu(cpu : &mut OLC6502, nes : &mut NesData, depth : Option<usize> ){
     
     let term = Term::stdout();
     // Set the reset vector
-    nes.ram[0xFFFC] = 0x00;
-    nes.ram[0xFFFD] = 0x80;
+    nes.write(0xFFFC,0x00);
+    nes.write(0xFFFD,0x80);
     
     // get the Assembly code
     let code : Vec<u8> =  test_code();
     // Writes the code in the ram with offset 0x8000
     for i in 0..code.len(){
-        nes.ram[0x8000+i] = code[i];
+        nes.write(0x8000+i as u16,code[i]);
     }
     cpu.power(nes);
     while input.trim() != "quit" {

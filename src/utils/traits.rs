@@ -63,3 +63,16 @@ impl OverflowOp<u8> for u8{
         }
     }
 }
+
+pub trait InBetween<T> {
+    /// Provide an inbetween check.
+    /// Low number is included, high number is excluded
+    fn in_between(&self, low : T, high:T) -> bool;
+}
+
+/// Traits that gives the components to where you should read or write data.
+/// Typically if you're in the NESData you want to know if you're reading from the cartridge,
+/// the ram or the mapper. T here is supposed to be en ENUM that you have to match to read and write
+pub trait AddrConvert<T> {
+    fn to_where(&self) -> T;
+}
