@@ -21,6 +21,12 @@ impl NesData {
             cartridge : [0u8; 0xBFDF]
         }
     }
+    pub fn insert_cartridge(&mut self, cartridge : [u8;0xBFDF]){
+
+    }
+    pub fn reset_memory(&mut self){
+
+    }
 }
 
 impl DataActions for NesData {

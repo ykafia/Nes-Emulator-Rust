@@ -5,7 +5,7 @@ use std::io::prelude::*;
 
 use super::*;
 
-pub fn test_cpu(cpu : &mut OLC6502, nes : &mut NesData, depth : Option<usize> ){
+pub fn test_cpu(cpu : &mut CPU6502, nes : &mut NesData, depth : Option<usize> ){
     let dpth = match depth{
         Some(x) => x,
         None => 8
@@ -66,7 +66,7 @@ fn display_code(ram : Vec<u8>, length : usize, depth : usize) -> String{
     result
 }
 
-fn display_registers(cpu : &OLC6502) -> String{
+fn display_registers(cpu : &CPU6502) -> String{
     let mut result = String::new();
     
     result += format!("{:012} : {:03}\n","Applying",cpu.lookup[cpu.curr_opcode as usize].opcode).as_str();

@@ -6,7 +6,7 @@ use super::super::utils::*;
 //TODO: Implement the rest of the cpu instructions
 
 /// Struct representing the 6502 cpu's data
-pub struct OLC6502 {
+pub struct CPU6502 {
     /// Accumulator :
     /// A is byte-wide and along with the arithmetic logic unit (ALU),
     /// supports using the status register for carrying,
@@ -73,8 +73,8 @@ pub struct INSTRUCTION {
 }
 
 // pub trait InstructionFunctions {
-//     fn apply_op(&mut self, cpu: &OLC6502) -> u8;
-//     fn apply_addressing_mode(&mut self, cpu:  &OLC6502) -> u8;
+//     fn apply_op(&mut self, cpu: &CPU6502) -> u8;
+//     fn apply_addressing_mode(&mut self, cpu:  &CPU6502) -> u8;
 // }
 
 pub trait CpuApplyFunctions {
@@ -196,9 +196,9 @@ pub trait OperationCodes {
 //#             Gonna be a long, long way till the EOF, just bear with it               #
 //#######################################################################################
 
-impl OLC6502 {
-    pub fn new() -> OLC6502 {
-        OLC6502 {
+impl CPU6502 {
+    pub fn new() -> CPU6502 {
+        CPU6502 {
             a: 0,    // a register
             x: 0,    // x register for low index
             y: 0,    // y register for high index
@@ -215,7 +215,7 @@ impl OLC6502 {
     }
 }
 
-impl CpuIO for OLC6502 {
+impl CpuIO for CPU6502 {
     fn read(&mut self, nes: &mut NesData, addr: u16, read_only: bool) -> u8 {
         //TODO: check if the address size is in the correct
         nes.read(addr, read_only)
@@ -225,7 +225,7 @@ impl CpuIO for OLC6502 {
     }
 }
 
-impl AddressingModes for OLC6502 {
+impl AddressingModes for CPU6502 {
     fn IMP(&mut self) -> u8 {
         self.fetched_data = self.a;
         0u8
@@ -340,7 +340,7 @@ impl AddressingModes for OLC6502 {
     }
 }
 
-impl CpuApplyFunctions for OLC6502 {
+impl CpuApplyFunctions for CPU6502 {
     fn apply_op(&mut self, instruction: INSTRUCTION, nes: &mut NesData) -> u8 {
         match instruction.opcode.as_str() {
             "ADC" => self.ADC(nes),
@@ -421,7 +421,7 @@ impl CpuApplyFunctions for OLC6502 {
     }
 }
 
-impl OperationCodes for OLC6502 {
+impl OperationCodes for CPU6502 {
     /// Add with carry, Done 
     fn ADC(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
@@ -925,7 +925,7 @@ impl OperationCodes for OLC6502 {
     }
 }
 
-impl CPUFunctions for OLC6502 {
+impl CPUFunctions for CPU6502 {
     fn clock(&mut self, nes: &mut NesData) {
         if self.cycles == 0 {
             self.curr_opcode = self.read(nes, self.pc, true);

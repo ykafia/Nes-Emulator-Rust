@@ -1,5 +1,6 @@
 
 use super::super::utils::*;
+use super::*;
 /// The Picture processing unit. 
 /// It should probably be handled by the computer itself depending the design.
 /// This component handles the pictures drawn on the screen, 
@@ -24,7 +25,7 @@ impl PPU {
             OAM : [0u8;256]
         }
     }
-    fn write(&mut self, addr : u16, data:u8) {
+    fn ppu_write(&mut self, addr : u16, data:u8) {
         match addr.to_where() {
             PPUComponents::PALLETTE => 
                 self.pallette[addr as usize] = data,
@@ -34,7 +35,7 @@ impl PPU {
                 self.ram[addr as usize] = data,
         }
     }
-    fn read(&mut self, addr : u16, read_only : bool) -> u8{
+    fn ppu_read(&mut self, addr : u16, read_only : bool) -> u8{
         match addr.to_where() {
             PPUComponents::PALLETTE => 
                 self.pallette[addr as usize],
@@ -43,6 +44,14 @@ impl PPU {
             PPUComponents::RAM =>
                 self.ram[addr as usize]
         }
+    }
+    #[warn(dead_code)]
+    fn cpu_read(&mut self, cpu : &mut CPU6502, nes: &mut NesData , addr : u16, read_only : bool) -> u8 {
+        cpu.read(nes, addr,true)
+    }
+    #[warn(dead_code)]
+    fn cpu_write(&mut self, cpu : &mut CPU6502 , nes: &mut NesData, addr : u16, data : u8){
+        cpu.write(nes,addr,data);
     }
 }
 
