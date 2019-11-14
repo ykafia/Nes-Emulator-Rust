@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
 
-use super::*;
-use super::instruction_generator::get_lookup_list;
 use super::super::utils::*;
+use super::instruction_generator::get_lookup_list;
+use super::*;
 //TODO: Implement the rest of the cpu instructions
 
 /// Struct representing the 6502 cpu's data
@@ -95,7 +95,6 @@ pub trait CPUFunctions {
     fn interupt_req(&mut self, nes: &mut NesData);
     fn non_maskable_interupt_req(&mut self, nes: &mut NesData);
     fn fetch_data(&mut self, nes: &mut NesData) -> u8;
-
 }
 pub trait CpuIO {
     fn read(&mut self, nes: &mut NesData, addr: u16, read_only: bool) -> u8;
@@ -231,7 +230,7 @@ impl AddressingModes for CPU6502 {
         0u8
     }
     fn IMM(&mut self) -> u8 {
-        self.pc+=1;
+        self.pc += 1;
         self.addr_abs = self.pc;
         0u8
     }
@@ -422,7 +421,7 @@ impl CpuApplyFunctions for CPU6502 {
 }
 
 impl OperationCodes for CPU6502 {
-    /// Add with carry, Done 
+    /// Add with carry, Done
     fn ADC(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let tmp: u16 = (self.a + self.fetched_data + FLAGS6502::C as u8) as u16;
@@ -448,7 +447,7 @@ impl OperationCodes for CPU6502 {
     fn ASL(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         self.a = self.fetched_data;
-        self.set_flag(FLAGS6502::C,self.a.get_high_bit());
+        self.set_flag(FLAGS6502::C, self.a.get_high_bit());
         self.a = self.a << 1;
         0u8
     }
@@ -558,7 +557,10 @@ impl OperationCodes for CPU6502 {
     fn BVC(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::V) == 0 {
             self.cycles += 1;
-            self.addr_abs = self.pc.checked_add(self.addr_rel).unwrap_or(self.addr_rel-self.pc);
+            self.addr_abs = self
+                .pc
+                .checked_add(self.addr_rel)
+                .unwrap_or(self.addr_rel - self.pc);
             if self.addr_abs & 0xFF00 != self.pc & 0xFF00 {
                 self.cycles += 1;
             }
@@ -600,7 +602,6 @@ impl OperationCodes for CPU6502 {
     }
     /// Compare, Done
     fn CMP(&mut self, nes: &mut NesData) -> u8 {
-
         self.fetch_data(nes);
         let value = self.a - self.fetched_data;
         self.set_flag(FLAGS6502::N, !value.get_high_bit());
@@ -620,8 +621,11 @@ impl OperationCodes for CPU6502 {
     /// Compare Y register, Done
     fn CPY(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
-        let result = self.y.checked_sub(self.fetched_data).unwrap_or(self.fetched_data-self.y);
-        
+        let result = self
+            .y
+            .checked_sub(self.fetched_data)
+            .unwrap_or(self.fetched_data - self.y);
+
         self.set_flag(FLAGS6502::N, !result.get_high_bit());
         self.set_flag(FLAGS6502::Z, result == 0);
         self.set_flag(FLAGS6502::C, self.y >= self.fetched_data);
@@ -634,20 +638,20 @@ impl OperationCodes for CPU6502 {
         self.write(nes, self.addr_rel, tmp);
         self.set_flag(FLAGS6502::Z, tmp == 0);
         self.set_flag(FLAGS6502::N, !tmp.get_high_bit());
-        
+
         0u8
     }
     /// Decrement X register, Done
     fn DEX(&mut self) -> u8 {
         self.x -= 1;
-        self.set_flag(FLAGS6502::Z, self.x==0);
+        self.set_flag(FLAGS6502::Z, self.x == 0);
         self.set_flag(FLAGS6502::N, !self.x.get_high_bit());
         0u8
     }
     /// Decrement Y register, Done
     fn DEY(&mut self) -> u8 {
         self.y -= 1;
-        self.set_flag(FLAGS6502::Z, self.y==0);
+        self.set_flag(FLAGS6502::Z, self.y == 0);
         self.set_flag(FLAGS6502::N, !self.y.get_high_bit());
         0u8
     }
@@ -662,7 +666,7 @@ impl OperationCodes for CPU6502 {
     /// Increment data
     fn INC(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
-        let temp = self.fetched_data +1;
+        let temp = self.fetched_data + 1;
         self.write(nes, self.addr_abs, temp);
         self.set_flag(FLAGS6502::N, !temp.get_high_bit());
         self.set_flag(FLAGS6502::Z, temp == 0);
@@ -671,14 +675,14 @@ impl OperationCodes for CPU6502 {
     /// Increment X register
     fn INX(&mut self) -> u8 {
         self.x += 1;
-        self.set_flag(FLAGS6502::Z, self.x==0);
+        self.set_flag(FLAGS6502::Z, self.x == 0);
         self.set_flag(FLAGS6502::N, !self.x.get_high_bit());
         0u8
     }
     /// Increment Y register
     fn INY(&mut self) -> u8 {
         self.y += 1;
-        self.set_flag(FLAGS6502::Z, self.y==0);
+        self.set_flag(FLAGS6502::Z, self.y == 0);
         self.set_flag(FLAGS6502::N, !self.y.get_high_bit());
         0u8
     }
@@ -689,19 +693,18 @@ impl OperationCodes for CPU6502 {
     }
     /// Jump to sub routine, push current program counter to stack
     fn JSR(&mut self, nes: &mut NesData) -> u8 {
-        self.pc -=1;
+        self.pc -= 1;
         self.write(nes, 0x0100 + self.stkp as u16, self.pc.get_high_byte());
-        self.stkp-=1;
+        self.stkp -= 1;
         self.write(nes, 0x0100 + self.stkp as u16, self.pc.get_high_byte());
-        self.stkp-=1;
+        self.stkp -= 1;
         self.pc = self.addr_abs;
         0u8
     }
     /// Load data to the accumumator
     fn LDA(&mut self, nes: &mut NesData) -> u8 {
-        
         self.fetch_data(nes);
-        
+
         self.a = self.fetched_data;
         self.set_flag(FLAGS6502::Z, self.a == 0);
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
@@ -724,26 +727,26 @@ impl OperationCodes for CPU6502 {
         1u8
     }
     /// Logical shift right
-    fn LSR(&mut self, nes: &mut NesData) -> u8{
+    fn LSR(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let mut tmp = self.read(nes, self.addr_abs, true);
         self.set_flag(FLAGS6502::C, tmp.get_low_bit());
         tmp >>= 1;
-        match self.lookup[self.curr_opcode as usize].addr_mode.as_str(){
+        match self.lookup[self.curr_opcode as usize].addr_mode.as_str() {
             "IMP" => self.a = tmp,
-            _ => self.write(nes, self.addr_abs, tmp)
+            _ => self.write(nes, self.addr_abs, tmp),
         }
-        
+
         self.set_flag(FLAGS6502::Z, tmp == 0);
         self.set_flag(FLAGS6502::N, !tmp.get_high_bit());
         0u8
     }
-    /// No operation, do nothing 
+    /// No operation, do nothing
     /// But there's a catch, some NOP needs more cycles (https://wiki.nesdev.com/w/index.php/CPU_unofficial_opcodes)
     fn NOP(&mut self) -> u8 {
-        match self.curr_opcode{
+        match self.curr_opcode {
             0xFC => 1u8,
-            _ => 0u8
+            _ => 0u8,
         }
     }
     /// Inclusive Or with accumulator
@@ -763,7 +766,7 @@ impl OperationCodes for CPU6502 {
     /// Push status in the stack
     fn PHP(&mut self, nes: &mut NesData) -> u8 {
         self.write(nes, 0x0100 + self.stkp as u16, self.status | 0x10);
-        self.stkp-=1;
+        self.stkp -= 1;
         self.set_flag(FLAGS6502::B, false);
         self.set_flag(FLAGS6502::U, false);
         0u8
@@ -787,34 +790,33 @@ impl OperationCodes for CPU6502 {
     fn ROL(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let tmp = (self.fetched_data as u16) << 1 | self.get_flag(FLAGS6502::C) as u16;
-        
+
         self.set_flag(FLAGS6502::C, tmp.get_nth_bit(8));
-        self.set_flag(FLAGS6502::Z, tmp.get_low_byte() == 0 );
+        self.set_flag(FLAGS6502::Z, tmp.get_low_byte() == 0);
         self.set_flag(FLAGS6502::N, tmp.get_low_byte().get_high_bit());
 
         match self.lookup[self.curr_opcode as usize].addr_mode.as_str() {
             "IMP" => self.a = tmp.get_low_byte(),
-            _ => self.write(nes, self.addr_abs, tmp.get_low_byte())
+            _ => self.write(nes, self.addr_abs, tmp.get_low_byte()),
         }
-        
+
         0u8
     }
     /// Rotate on right
     fn ROR(&mut self, nes: &mut NesData) -> u8 {
-
         self.fetch_data(nes);
         let mut tmp = self.fetched_data;
         self.set_flag(FLAGS6502::C, tmp.get_low_bit());
         tmp >>= 1;
-        
-        self.set_flag(FLAGS6502::Z, tmp == 0 );
+
+        self.set_flag(FLAGS6502::Z, tmp == 0);
         self.set_flag(FLAGS6502::N, tmp.get_high_bit());
 
         match self.lookup[self.curr_opcode as usize].addr_mode.as_str() {
             "IMP" => self.a = tmp,
-            _ => self.write(nes, self.addr_abs, tmp)
+            _ => self.write(nes, self.addr_abs, tmp),
         }
-        
+
         0u8
     }
     /// Return from interupt, Done
@@ -831,10 +833,10 @@ impl OperationCodes for CPU6502 {
     }
     /// Return from subroutine, Pop the program counter from the stack
     fn RTS(&mut self, nes: &mut NesData) -> u8 {
-        self.stkp+=1;
+        self.stkp += 1;
         let hi = (self.read(nes, 0x0100 + self.stkp as u16, true) as u16) << 8;
         let lo = self.read(nes, 0x0100 + (self.stkp + 1) as u16, true) as u16;
-        self.pc=hi+lo;
+        self.pc = hi + lo;
 
         0u8
     }
@@ -929,21 +931,20 @@ impl CPUFunctions for CPU6502 {
     fn clock(&mut self, nes: &mut NesData) {
         if self.cycles == 0 {
             self.curr_opcode = self.read(nes, self.pc, true);
-            
+
             self.set_flag(FLAGS6502::U, true);
-            
+
             self.cycles = self.lookup[self.curr_opcode as usize].cycles;
-            
+
             let additionnal_cycle_1 =
                 self.apply_addressing_mode(self.lookup[self.curr_opcode as usize].clone(), nes);
             self.pc += 1;
             let additionnal_cycle_2 =
                 self.apply_op(self.lookup[self.curr_opcode as usize].clone(), nes);
-                
+
             self.cycles += additionnal_cycle_1 & additionnal_cycle_2;
             self.set_flag(FLAGS6502::U, true);
-        }
-        else{
+        } else {
             self.cycles -= 1;
         }
     }
@@ -974,7 +975,7 @@ impl CPUFunctions for CPU6502 {
         self.fetched_data = 0;
         self.cycles = 8;
     }
-    fn power(&mut self, nes: &mut NesData){
+    fn power(&mut self, nes: &mut NesData) {
         self.a = 0;
         self.x = 0;
         self.y = 0;
@@ -984,7 +985,7 @@ impl CPUFunctions for CPU6502 {
         let lo = self.read(nes, self.addr_abs, true) as u16;
         let hi = self.read(nes, self.addr_abs + 1, true) as u16;
         self.pc = (hi << 8) | lo;
-        
+
         self.addr_abs = 0;
         self.addr_rel = 0;
         self.fetched_data = 0;
