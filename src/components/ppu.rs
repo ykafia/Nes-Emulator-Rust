@@ -33,6 +33,7 @@ impl PPU {
     }
     fn ppu_read(&mut self, addr: u16, read_only: bool) -> u8 {
         match addr.to_where() {
+            // TODO: do the pattern read from the cartridge.
             PPUComponents::PALLETTE => self.pallette[addr as usize],
             PPUComponents::PATTERN => self.pattern[addr as usize],
             PPUComponents::RAM => self.ram[addr as usize],

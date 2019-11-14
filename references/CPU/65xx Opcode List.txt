@@ -1,0 +1,886 @@
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		61  ADC  ($ab,X)        X    X     X      X       X      X      2    6   1,2,4,22,25
+		63  ADC  ($ab,S)        -    -     -      -       -      X      2    4   1,4
+		65  ADC  $ab            X    X     X      X       X      X      2    3   1,2,4,22
+		67  ADC  [$ab]          -    -     -      -       -      X      2    6   1,4
+		69  ADC  #$ab           X    X     X      X       X      X      2    2   1,4,18
+		6D  ADC  $abcd          X    X     X      X       X      X      3    4   1,4,22
+		6F  ADC  $abcdef        -    -     -      -       -      X      4    5   1,4
+		71  ADC  ($ab),Y        X    X     X      X       X      X      2    5   1,2,3,4
+		72  ADC  ($ab)          -    X     X      X       -      X      2    5   1,2,4,23
+		72  ADC  ($ab),Z        -    -     -      -       X      -      2    5
+		73  ADC  ($ab,S),Y      -    -     -      -       -      X      2    7   1,4
+		75  ADC  $ab,X          X    X     X      X       X      X      2    4   1,2,4,25
+		77  ADC  [$ab],Y        -    -     -      -       -      X      2    6   1,2,4
+		79  ADC  $abcd,Y        X    X     X      X       X      X      3    4   1,3,4,22
+		7D  ADC  $abcd,X        X    X     X      X       X      X      3    4   1,3,4,22
+		7F  ADC  $abcdef,X      -    -     -      -       -      X      4    5   1,4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		4B  ALR* #$ab           X    -     -      -       -      -      2    2   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		0B  ANC* #$ab           X    -     -      -       -      -      2    2   20
+		2B  ANC* #$ab           X    -     -      -       -      -      2    2   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		21  AND  ($ab,X)        X    X     X      X       X      X      2    6   1,2,22,25
+		23  AND  $ab,S          -    -     -      -       -      X      2    4   1
+		25  AND  $ab            X    X     X      X       X      X      2    3   1,2,22
+		27  AND  [$ab]          -    -     -      -       -      X      2    6   1,2
+		29  AND  #$ab           X    X     X      X       X      X      2    2   1,18
+		2D  AND  $abcd          X    X     X      X       X      X      3    4   1,22
+		2F  AND  $abcdef        -    -     -      -       -      X      4    5   1
+		31  AND  ($ab),Y        X    X     X      X       X      X      2    5   1,2,3
+		32  AND  ($ab)          -    X     X      X       -      X      2    5   1,2,23
+		32  AND  ($ab),Z        -    -     -      -       X      -      2    5
+		33  AND  ($ab,S),Y      -    -     -      -       -      X      2    7   1
+		35  AND  $ab,X          X    X     X      X       X      X      2    4   1,2,25
+		37  AND  [$ab],Y        -    -     -      -       -      X      2    6   1,2
+		39  AND  $abcd,Y        X    X     X      X       X      X      3    4   1,3,22
+		3D  AND  $abcd,X        X    X     X      X       X      X      3    4   1,3,22
+		3F  AND  $abcdef,X      -    -     -      -       -      X      4    5   1
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		8B  ANE* #$ab           X    -     -      -       -      -      2    2   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		AB  ANX* #$ab           X    -     -      -       -      -      2    2   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		6B  ARR* #$ab           X    -     -      -       -      -      2    2   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		06  ASL  $ab            X    X     X      X       X      X      2    5   2,5,22,25
+		0A  ASL  A              X    X     X      X       X      X      1    2   25
+		0E  ASL  $abcd          X    X     X      X       X      X      3    6   5,22,25
+		16  ASL  $ab,X          X    X     X      X       X      X      2    6   2,5,26
+		1E  ASL  $abcd,X        X    X     X      X       X      X      3    7   5,6,26
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		03  ASO* ($ab,X)        X    -     -      -       -      -      2    8   20
+		07  ASO* $ab            X    -     -      -       -      -      2    5   20
+		0F  ASO* $abcd          X    -     -      -       -      -      3    6   20
+		13  ASO* ($ab),Y        X    -     -      -       -      -      2    8   20
+		17  ASO* $ab,X          X    -     -      -       -      -      2    6   20
+		1B  ASO* $abcd,Y        X    -     -      -       -      -      3    7   20
+		1F  ASO* $abcd,X        X    -     -      -       -      -      3    7   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		43  ASR  A              -    -     -      -       X      -      1    2
+		44  ASR  $ab            -    -     -      -       X      -      2    4
+		54  ASR  $ab,X          -    -     -      -       X      -      2    4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		CB  ASW  $abcd          -    -     -      -       X      -      3    7
+
+                            6502 65c02 R65c02 HuC6280 65ce02 65ce02 65c816 Size Cyc References
+		Op  Format                                        4502   4510
+		5C  AUG                 -    -     -      -       X      -      -      ?    ?
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		0F  BBR0 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		1F  BBR1 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		2F  BBR2 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		3F  BBR3 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		4F  BBR4 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		5F  BBR5 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		6F  BBR6 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		7F  BBR7 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		8F  BBS0 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		9F  BBS1 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		AF  BBS2 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		BF  BBS3 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		CF  BBS4 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		DF  BBS5 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		EF  BBS6 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+		FF  BBS7 $ab,nearlabel  -    -     X      X       X      -      3    5   7,8,22,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		90  BCC  nearlabel      X    X     X      X       X      X      2    2   7,8
+		93  BCC  farlabel       -    -     -      -       X      -      3    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		B0  BCS  nearlabel      X    X     X      X       X      X      2    2   7,8
+		B3  BCS  farlabel       -    -     -      -       X      -      3    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		F0  BEQ  nearlabel      X    X     X      X       X      X      2    2   7,8
+		F3  BEQ  farlabel       -    -     -      -       X      -      3    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		24  BIT  $ab            X    X     X      X       X      X      2    3   1,2,22,27
+		2C  BIT  $abcd          X    X     X      X       X      X      3    4   1,22,27
+		34  BIT  $ab,X          -    X     X      X       X      X      2    4   1,2,25,27
+		3C  BIT  $abcd,X        -    X     X      X       X      X      3    4   1,3,22,27
+		89  BIT  #$ab           -    X     X      X       X      X      2    2   1,18,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		30  BMI  nearlabel      X    X     X      X       X      X      2    2   7,8
+		33  BMI  farlabel       -    -     -      -       X      -      3    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		D0  BNE  nearlabel      X    X     X      X       X      X      2    2   7,8
+		D3  BNE  farlabel       -    -     -      -       X      -      3    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		10  BPL  nearlabel      X    X     X      X       X      X      2    2   7,8
+		13  BPL  farlabel       -    -     -      -       X      -      3    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		80  BRA  nearlabel      -    X     X      X       X      X      2    3   8,22,25
+		83  BRA  farlabel       -    -     -      -       X      -      3    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		00  BRK  #$ab           X    X     X      X       X      X      2    7   9,17,22
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		82  BRL  farlabel       -    -     -      -       -      X      3    4
+
+		Op  Format              6502 65c02 R65c02 65cs02 HuC6280 65ce02 65c816 Size Cyc References
+		44  BSR  nearlabel      -    -     -      -      X       -      -      2    8
+		63  BSR  farlabel       -    -     -      X      -       X      -      3    5
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		50  BVC  nearlabel      X    X     X      X       X      X      2    2   7,8
+		53  BVC  farlabel       -    -     -      -       X      -      3    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		70  BVS  nearlabel      X    X     X      X       X      X      2    2   7,8
+		73  BVS  farlabel       -    -     -      -       X      -      3    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		62  CLA                 -    -     -      X       -      -      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		18  CLC                 X    X     X      X       X      X      1    2   25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		D8  CLD                 X    X     X      X       X      X      1    2   25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		02  CLE                 -    -     -      -       X      -      1    2   27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		58  CLI                 X    X     X      X       X      X      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		B8  CLV                 X    X     X      X       X      X      1    2   25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		82  CLX                 -    -     -      X       -      -      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		C2  CLY                 -    -     -      X       -      -      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		C1  CMP  ($ab,X)        X    X     X      X       X      X      2    6   1,2,22,25
+		C3  CMP  $ab,S          -    -     -      -       -      X      2    4   1
+		C5  CMP  $ab            X    X     X      X       X      X      2    3   1,2,22
+		C7  CMP  [$ab]          -    -     -      -       -      X      2    6   1,2
+		C9  CMP  #$ab           X    X     X      X       X      X      2    2   1,18
+		CD  CMP  $abcd          X    X     X      X       X      X      3    4   1,22
+		CF  CMP  $abcdef        -    -     -      -       -      X      4    5   1
+		D1  CMP  ($ab),Y        X    X     X      X       X      X      2    5   1,2,3
+		D2  CMP  ($ab)          -    X     X      X       -      X      2    5   1,2,23
+		D2  CMP  ($ab),Z        -    -     -      -       X      -      2    5
+		D3  CMP  ($ab,S),Y      -    -     -      -       -      X      2    7   1
+		D5  CMP  $ab,X          X    X     X      X       X      X      2    4   1,2,25
+		D7  CMP  [$ab],Y        -    -     -      -       -      X      2    6   1,2
+		D9  CMP  $abcd,Y        X    X     X      X       X      X      3    4   1,3,22
+		DD  CMP  $abcd,X        X    X     X      X       X      X      3    4   1,3,22
+		DF  CMP  $abcdef,X      -    -     -      -       -      X      4    5   1
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		02  COP  #$ab           -    -     -      -       -      X      2    7   9,17
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		E0  CPX  #$ab           X    X     X      X       X      X      2    2   10,19
+		E4  CPX  $ab            X    X     X      X       X      X      2    3   2,10,22
+		EC  CPX  $abcd          X    X     X      X       X      X      3    4   10,22
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		C0  CPY  #$ab           X    X     X      X       X      X      2    2   10,19
+		C4  CPY  $ab            X    X     X      X       X      X      2    3   2,10,22
+		CC  CPY  $abcd          X    X     X      X       X      X      3    4   10,22
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		C2  CPZ  #$ab           -    -     -      -       X      -      2    2
+		D4  CPZ  $ab            -    -     -      -       X      -      2    3
+		DC  CPZ  $abcd          -    -     -      -       X      -      3    4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		D4  CSH                 -    -     -      X       -      -      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		54  CSL                 -    -     -      X       -      -      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		C3  DCM* ($ab,X)        X    -     -      -       -      -      2    8   20
+		C7  DCM* $ab            X    -     -      -       -      -      2    5   20
+		CF  DCM* $abcd          X    -     -      -       -      -      3    6   20
+		D3  DCM* ($ab),Y        X    -     -      -       -      -      2    8   20
+		D7  DCM* $ab,X          X    -     -      -       -      -      2    6   20
+		DB  DCM* $abcd,Y        X    -     -      -       -      -      3    7   20
+		DF  DCM* $abcd,X        X    -     -      -       -      -      3    7   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		3A  DEA                 -    X     X      X       X      X      1    2   25,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		C6  DEC  $ab            X    X     X      X       X      X      2    5   2,5,22,25,27
+		CE  DEC  $abcd          X    X     X      X       X      X      3    6   5,22,25,27
+		D6  DEC  $ab,X          X    X     X      X       X      X      2    6   2,5,26,27
+		DE  DEC  $abcd,X        X    X     X      X       X      X      3    7   5,6,26,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		C3  DEW  $ab            -    -     -      -       X      -      2    5   27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		CA  DEX                 X    X     X      X       X      X      1    2   25,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		88  DEY                 X    X     X      X       X      X      1    2   25,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		3B  DEZ                 -    -     -      -       X      -      1    1   27
+
+                            6502 65c02 R65c02 HuC6280 65ce02 65ce02 65c816 Size Cyc References
+		Op  Format                                        4502   4510
+		EA  EOM                 -    -     -      -       -      X      -      1    1
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		41  EOR  ($ab,X)        X    X     X      X       X      X      2    6   1,2,22,25
+		43  EOR  $ab,S          -    -     -      -       -      X      2    4   1
+		45  EOR  $ab            X    X     X      X       X      X      2    3   1,2,22
+		47  EOR  [$ab]          -    -     -      -       -      X      2    6   1,2
+		49  EOR  #$ab           X    X     X      X       X      X      2    2   1,18
+		4D  EOR  $abcd          X    X     X      X       X      X      3    4   1,22
+		4F  EOR  $abcdef        -    -     -      -       -      X      4    5   1
+		51  EOR  ($ab),Y        X    X     X      X       X      X      2    5   1,2,3
+		52  EOR  ($ab)          -    X     X      X       -      X      2    5   1,2,23
+		52  EOR  ($ab),Z        -    -     -      -       X      -      2    5
+		53  EOR  ($ab,S),Y      -    -     -      -       -      X      2    7   1
+		55  EOR  $ab,X          X    X     X      X       X      X      2    4   1,3,25
+		57  EOR  [$ab],Y        -    -     -      -       -      X      2    6   1,2
+		59  EOR  $abcd,Y        X    X     X      X       X      X      3    4   1,3,22
+		5D  EOR  $abcd,X        X    X     X      X       X      X      3    4   1,3,22
+		5F  EOR  $abcdef,X      -    -     -      -       -      X      4    5   1
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		02  HLT*                X    -     -      -       -      -      1    2   20
+		12  HLT*                X    -     -      -       -      -      1    2   20
+		22  HLT*                X    -     -      -       -      -      1    2   20
+		32  HLT*                X    -     -      -       -      -      1    2   20
+		42  HLT*                X    -     -      -       -      -      1    2   20
+		52  HLT*                X    -     -      -       -      -      1    2   20
+		62  HLT*                X    -     -      -       -      -      1    2   20
+		72  HLT*                X    -     -      -       -      -      1    2   20
+		92  HLT*                X    -     -      -       -      -      1    2   20
+		B2  HLT*                X    -     -      -       -      -      1    2   20
+		D2  HLT*                X    -     -      -       -      -      1    2   20
+		F2  HLT*                X    -     -      -       -      -      1    2   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		1A  INA                 -    X     X      X       X      X      1    2   25,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		E6  INC  $ab            X    X     X      X       X      X      2    5   2,5,22,25,27
+		EE  INC  $abcd          X    X     X      X       X      X      3    6   5,22,25,27
+		F6  INC  $ab,X          X    X     X      X       X      X      2    6   2,5,26,27
+		FE  INC  $abcd,X        X    X     X      X       X      X      3    7   5,6,26,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		E3  INS* ($ab,X)        X    -     -      -       -      -      2    8   20
+		E7  INS* $ab            X    -     -      -       -      -      2    5   20
+		EF  INS* $abcd          X    -     -      -       -      -      3    6   20
+		F3  INS* ($ab),Y        X    -     -      -       -      -      2    8   20
+		F7  INS* $ab,X          X    -     -      -       -      -      2    6   20
+		FB  INS* $abcd,Y        X    -     -      -       -      -      3    7   20
+		FF  INS* $abcd,X        X    -     -      -       -      -      3    7   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		E3  INW  $ab            -    -     -      -       X      -      2    5   27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		E8  INX                 X    X     X      X       X      X      1    2   25,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		C8  INY                 X    X     X      X       X      X      1    2   25,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		1B  INZ                 -    -     -      -       X      -      1    1   27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		4C  JMP  $abcd          X    X     X      X       X      X      3    3   22,27
+		5C  JMP  $abcdef        -    -     -      -       -      X      4    4
+		6C  JMP  ($abcd)        X    X     X      X       X      X      3    5   11,12,23,27
+		7C  JMP  ($abcd,X)      -    X     X      X       X      X      3    6   22,25,27
+		DC  JMP  [$abcd]        -    -     -      -       -      X      3    6
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		20  JSR  $abcd          X    X     X      X       X      X      3    6   22,25
+		22  JSR  ($abcd)        -    -     -      -       X      -      3    7
+		22  JSR  $abcdef        -    -     -      -       -      X      4    8
+		23  JSR  ($abcd,X)      -    -     -      -       X      -      3    7
+		FC  JSR  ($abcd,X)      -    -     -      -       -      X      3    8
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		BB  LAS* $abcd,Y        X    -     -      -       -      -      3    4   3,20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		A3  LAX* ($ab,X)        X    -     -      -       -      -      2    6   20
+		A7  LAX* $ab            X    -     -      -       -      -      2    3   20
+		AF  LAX* $abcd          X    -     -      -       -      -      3    4   20
+		B3  LAX* ($ab),Y        X    -     -      -       -      -      2    5   3,20
+		B7  LAX* $ab,Y          X    -     -      -       -      -      2    4   20
+		BF  LAX* $abcd,Y        X    -     -      -       -      -      3    4   3,20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		A1  LDA  ($ab,X)        X    X     X      X       X      X      2    6   1,2,22,25
+		A3  LDA  $ab,S          -    -     -      -       -      X      2    4   1
+		A5  LDA  $ab            X    X     X      X       X      X      2    3   1,2,22
+		A7  LDA  [$ab]          -    -     -      -       -      X      2    6   1,2
+		A9  LDA  #$ab           X    X     X      X       X      X      2    2   1,18
+		AD  LDA  $abcd          X    X     X      X       X      X      3    4   1,22
+		AF  LDA  $abcdef        -    -     -      -       -      X      4    5   1
+		B1  LDA  ($ab),Y        X    X     X      X       X      X      2    5   1,2,3
+		B2  LDA  ($ab)          -    X     X      X       -      X      2    5   1,2,23
+		B2  LDA  ($ab),Z        -    -     -      -       X      -      2    5
+		B3  LDA  ($ab,S),Y      -    -     -      -       -      X      2    7   1
+		B5  LDA  $ab,X          X    X     X      X       X      X      2    4   1,2,25
+		B7  LDA  [$ab],Y        -    -     -      -       -      X      2    6   1,2
+		B9  LDA  $abcd,Y        X    X     X      X       X      X      3    4   1,3,22
+		BD  LDA  $abcd,X        X    X     X      X       X      X      3    4   1,3,22
+		BF  LDA  $abcdef,X      -    -     -      -       -      X      4    5   1
+		E2  LDA  ($ab,S),Y      -    -     -      -       X      -      2    6
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		A2  LDX  #$ab           X    X     X      X       X      X      2    2   10,19
+		A6  LDX  $ab            X    X     X      X       X      X      2    3   2,10,22
+		AE  LDX  $abcd          X    X     X      X       X      X      3    4   10,22
+		B6  LDX  $ab,Y          X    X     X      X       X      X      2    4   2,10,25
+		BE  LDX  $abcd,Y        X    X     X      X       X      X      3    4   3,10,22
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		A0  LDY  #$ab           X    X     X      X       X      X      2    2   10,19
+		A4  LDY  $ab            X    X     X      X       X      X      2    3   2,10,22
+		AC  LDY  $abcd          X    X     X      X       X      X      3    4   10,22
+		B4  LDY  $ab,X          X    X     X      X       X      X      2    4   2,10,25
+		BC  LDY  $abcd,X        X    X     X      X       X      X      3    4   3,10,22
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		A3  LDZ  #$ab           -    -     -      -       X      -      2    2
+		AB  LDZ  $abcd          -    -     -      -       X      -      3    4
+		BB  LDZ  $abcd,X        -    -     -      -       X      -      3    4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		43  LSE* ($ab,X)        X    -     -      -       -      -      2    8   20
+		47  LSE* $ab            X    -     -      -       -      -      2    5   20
+		4F  LSE* $abcd          X    -     -      -       -      -      3    6   20
+		53  LSE* ($ab),Y        X    -     -      -       -      -      2    8   20
+		57  LSE* $ab,X          X    -     -      -       -      -      2    6   20
+		5B  LSE* $abcd,Y        X    -     -      -       -      -      3    7   20
+		5F  LSE* $abcd,X        X    -     -      -       -      -      3    7   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		46  LSR  $ab            X    X     X      X       X      X      2    5   2,5,22,25,27
+		4A  LSR  A              X    X     X      X       X      X      1    2   25,27
+		4E  LSR  $abcd          X    X     X      X       X      X      3    6   5,22,25,27
+		56  LSR  $ab,X          X    X     X      X       X      X      2    6   2,5,26,27
+		5E  LSR  $abcd,X        X    X     X      X       X      X      3    7   5,6,26,27
+
+                            6502 65c02 R65c02 HuC6280 65ce02 65ce02 65c816 Size Cyc References
+		Op  Format                                        4502   4510
+		5C  MAP                 -    -     -      -       -      X      -      1    2   27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		54  MVN  $ab,$cd        -    -     -      -       -      X      3    7n  13
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		44  MVP  $ab,$cd        -    -     -      -       -      X      3    7n  13
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		42  NEG  A              -    -     -      -       X      -      1    2
+
+                            6502 65c02 R65c02 HuC6280 65ce02 65ce02 65c816 Size Cyc References
+		Op  Format                                        4502   4510
+		EA  NOP                 X    X     X      X       X      -      X      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		03  NOP*                -    X     X      -       -      -      1    1   21
+		13  NOP*                -    X     X      -       -      -      1    1   21
+		1A  NOP*                X    -     -      -       -      -      1    2   20
+		23  NOP*                -    X     X      -       -      -      1    1   21
+		33  NOP*                -    X     X      X       -      -      1    1   21
+		3A  NOP*                X    -     -      -       -      -      1    2   20
+		5A  NOP*                X    -     -      -       -      -      1    2   20
+		7A  NOP*                X    -     -      -       -      -      1    2   20
+		DA  NOP*                X    -     -      -       -      -      1    2   20
+		FA  NOP*                X    -     -      -       -      -      1    2   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		01  ORA  ($ab,X)        X    X     X      X       X      X      2    6   1,2,22,25
+		03  ORA  $ab,S          -    -     -      -       -      X      2    4   1
+		05  ORA  $ab            X    X     X      X       X      X      2    3   1,2,22
+		07  ORA  [$ab]          -    -     -      -       -      X      2    6   1,2
+		09  ORA  #$ab           X    X     X      X       X      X      2    2   1,18
+		0D  ORA  $abcd          X    X     X      X       X      X      3    4   1,22
+		0F  ORA  $abcdef        -    -     -      -       -      X      4    5   1
+		11  ORA  ($ab),Y        X    X     X      X       X      X      2    5   1,2,3
+		12  ORA  ($ab)          -    X     X      X       -      X      2    5   1,2,23
+		12  ORA  ($ab),Z        -    -     -      -       X      -      2    5
+		13  ORA  ($ab,S),Y      -    -     -      -       -      X      2    7   1
+		15  ORA  $ab,X          X    X     X      X       X      X      2    4   1,2,25
+		17  ORA  [$ab],Y        -    -     -      -       -      X      2    6   1,2
+		19  ORA  $abcd,Y        X    X     X      X       X      X      3    4   1,3,22
+		1D  ORA  $abcd,X        X    X     X      X       X      X      3    4   1,3,22
+		1F  ORA  $abcdef,X      -    -     -      -       -      X      4    5   1
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		F4  PEA  $abcd          -    -     -      -       -      X      3    5
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		D4  PEI  ($ab)          -    -     -      -       -      X      2    6   2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		62  PER  farlabel       -    -     -      -       -      X      3    6
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		48  PHA                 X    X     X      X       X      X      1    3   1
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		8B  PHB                 -    -     -      -       -      X      1    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		0B  PHD                 -    -     -      -       -      X      1    4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		4B  PHK                 -    -     -      -       -      X      1    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		08  PHP                 X    X     X      X       X      X      1    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		F4  PHW  #$abcd         -    -     -      -       X      -      3    5
+		FC  PHW  $abcd          -    -     -      -       X      -      3    7
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		DA  PHX                 -    X     X      X       X      X      1    3   10
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		5A  PHY                 -    X     X      X       X      X      1    3   10
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		DB  PHZ                 -    -     -      -       X      -      1    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		68  PLA                 X    X     X      X       X      X      1    4   1,25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		AB  PLB                 -    -     -      -       -      X      1    4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		2B  PLD                 -    -     -      -       -      X      1    5
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		28  PLP                 X    X     X      X       X      X      1    4   25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		FA  PLX                 -    X     X      X       X      X      1    4   10,25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		7A  PLY                 -    X     X      X       X      X      1    4   10,25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		FB  PLZ                 -    -     -      -       X      -      1    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		C2  REP  #$ab           -    -     -      -       -      X      2    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		23  RLA* ($ab,X)        X    -     -      -       -      -      2    8   20
+		27  RLA* $ab            X    -     -      -       -      -      2    5   20
+		2F  RLA* $abcd          X    -     -      -       -      -      3    6   20
+		33  RLA* ($ab),Y        X    -     -      -       -      -      2    8   20
+		37  RLA* $ab,X          X    -     -      -       -      -      2    6   20
+		3B  RLA* $abcd,Y        X    -     -      -       -      -      3    7   20
+		3F  RLA* $abcd,X        X    -     -      -       -      -      3    7   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		07  RMB0 $ab            -    -     X      X       X      -      2    5   23,25
+		17  RMB1 $ab            -    -     X      X       X      -      2    5   23
+		27  RMB2 $ab            -    -     X      X       X      -      2    5   23,25
+		37  RMB3 $ab            -    -     X      X       X      -      2    5   23,25
+		47  RMB4 $ab            -    -     X      X       X      -      2    5   23,25
+		57  RMB5 $ab            -    -     X      X       X      -      2    5   23,25
+		67  RMB6 $ab            -    -     X      X       X      -      2    5   23,25
+		77  RMB7 $ab            -    -     X      X       X      -      2    5   23,25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		26  ROL  $ab            X    X     X      X       X      X      2    5   2,5,22,25
+		2A  ROL  A              X    X     X      X       X      X      1    2   25
+		2E  ROL  $abcd          X    X     X      X       X      X      3    6   5,22,25
+		36  ROL  $ab,X          X    X     X      X       X      X      2    6   2,5,26
+		3E  ROL  $abcd,X        X    X     X      X       X      X      3    7   5,6,26
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		66  ROR  $ab            X    X     X      X       X      X      2    5   1,22,25
+		6A  ROR  A              X    X     X      X       X      X      1    2   25
+		6E  ROR  $abcd          X    X     X      X       X      X      3    6   5,22,25
+		76  ROR  $ab,X          X    X     X      X       X      X      2    6   2,5,26
+		7E  ROR  $abcd,X        X    X     X      X       X      X      3    7   5,6,26
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		EB  ROW  $abcd          -    -     -      -       X      -      3    6
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		63  RRA* ($ab,X)        X    -     -      -       -      -      2    8   20
+		67  RRA* $ab            X    -     -      -       -      -      2    5   20
+		6F  RRA* $abcd          X    -     -      -       -      -      3    6   20
+		73  RRA* ($ab),Y        X    -     -      -       -      -      2    8   20
+		77  RRA* $ab,X          X    -     -      -       -      -      2    6   20
+		7B  RRA* $abcd,Y        X    -     -      -       -      -      3    7   20
+		7F  RRA* $abcd,X        X    -     -      -       -      -      3    7   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		40  RTI                 X    X     X      X       X      X      1    6   9,22,25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		6B  RTL                 -    -     -      -       -      X      1    6
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		62  RTN  #$ab           -    -     -      -       X      -      2    7
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		60  RTS                 X    X     X      X       X      X      1    6   22,26
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		22  SAX                 -    -     -      X       -      -      1    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		83  SAX* ($ab,X)        X    -     -      -       -      -      2    6   20
+		87  SAX* $ab            X    -     -      -       -      -      2    3   20
+		8F  SAX* $abcd          X    -     -      -       -      -      3    4   20
+		97  SAX* $ab,Y          X    -     -      -       -      -      2    4   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		42  SAY                 -    -     -      X       -      -      1    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		E1  SBC  ($ab,X)        X    X     X      X       X      X      2    6   1,2,4,22,25,27
+		E3  SBC  $ab,S          -    -     -      -       -      X      2    4   1,4
+		E5  SBC  $ab            X    X     X      X       X      X      2    3   1,2,4,22,27
+		E7  SBC  [$ab]          -    -     -      -       -      X      2    6   1,2,4
+		E9  SBC  #$ab           X    X     X      X       X      X      2    2   18,27
+		EB  SBC* #$ab           X    -     -      -       -      -      2    2   20
+		ED  SBC  $abcd          X    X     X      X       X      X      3    4   1,4,22,27
+		EF  SBC  $abcdef        -    -     -      -       -      X      4    5   1,4
+		F1  SBC  ($ab),Y        X    X     X      X       X      X      2    5   1,2,3,4,27
+		F2  SBC  ($ab)          -    X     X      X       -      X      2    5   1,2,4,23
+		F2  SBC  ($ab),Z        -    -     -      -       X      -      2    5   27
+		F3  SBC  ($ab,S),Y      -    -     -      -       -      X      2    7   1,2,4
+		F5  SBC  $ab,X          X    X     X      X       X      X      2    4   1,2,4,25,27
+		F7  SBC  [$ab],Y        -    -     -      -       -      X      2    6   1,2,4
+		F9  SBC  $abcd,Y        X    X     X      X       X      X      3    4   1,3,4,22,27
+		FD  SBC  $abcd,X        X    X     X      X       X      X      3    4   1,3,4,22,27
+		FF  SBC  $abcdef,X      -    -     -      -       -      X      4    6   1,4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		CB  SBX* #$ab           X    -     -      -       -      -      2    2   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		38  SEC                 X    X     X      X       X      X      1    2   25,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		F8  SED                 X    X     X      X       X      X      1    2   25,27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		03  SEE                 -    -     -      -       X      -      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		78  SEI                 X    X     X      X       X      X      1    2   27
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		E2  SEP  #$ab           -    -     -      -       -      X      2    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		F4  SET                 -    -     -      X       -      -      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		93  SHA* ($ab),Y        X    -     -      -       -      -      2    6   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		9F  SHA* $abcd,Y        X    -     -      -       -      -      3    5   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		9B  SHS* $abcd,Y        X    -     -      -       -      -      3    5   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		9E  SHX* $abcd,Y        X    -     -      -       -      -      3    5   20
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		9C  SHY* $abcd,X        X    -     -      -       -      -      3    5   20
+
+		Op  Format              6502 65c02 R65c02 65cs02 65c02S HuC6280 65ce02 65c816 Size Cyc References
+		02  SKB* #$ab           -    X     X      -      -      -       -      -      2    2   21
+		04  SKB* $ab            X    -     -      -      -      -       -      -      2    3   20
+		07  SKB* #$ab           -    X     -      -      -      -       -      -      2    5   21
+		0B  SKB* #$ab           -    X     X      X      X      X       -      -      2    2   21
+		14  SKB* $ab,X          X    -     -      -      -      -       -      -      2    4   20
+		17  SKB* #$ab           -    X     -      -      -      -       -      -      2    6   21
+		22  SKB* #$ab           -    X     X      X      X      -       -      -      2    2   21
+		27  SKB* #$ab           -    X     -      -      -      -       -      -      2    5   21
+		2B  SKB* #$ab           -    X     X      X      X      X       -      -      2    5   21
+		34  SKB* $ab,X          X    -     -      -      -      -       -      -      2    4   20
+		37  SKB* #$ab           -    X     -      -      -      -       -      -      2    6   21
+		42  SKB* #$ab           -    X     X      X      X      -       -      -      2    2   21
+		43  SKB* #$ab           -    X     X      X      X      -       -      -      2    8   21
+		44  SKB* $ab            X    -     -      -      -      -       -      -      2    3   20
+		44  SKB* #$ab           -    X     X      X      X      -       -      -      2    3   21
+		47  SKB* #$ab           -    X     -      -      -      -       -      -      2    5   21
+		4B  SKB* #$ab           -    X     X      X      X      X       -      -      2    2   21
+		53  SKB* #$ab           -    X     X      X      X      -       -      -      2    8   21
+		54  SKB* $ab,X          X    -     -      -      -      -       -      -      2    4   20
+		54  SKB* #$ab           -    X     X      X      X      -       -      -      2    4   21
+		57  SKB* #$ab           -    X     -      -      -      -       -      -      2    6   21
+		62  SKB* #$ab           -    X     X      X      X      -       -      -      2    2   21
+		63  SKB* #$ab           -    X     X      -      X      X       -      -      2    8   21
+		64  SKB* $ab            X    -     -      -      -      -       -      -      2    3   20
+		67  SKB* #$ab           -    X     -      -      -      -       -      -      2    5   21
+		6B  SKB* #$ab           -    X     X      X      X      X       -      -      2    2   21
+		73  SKB* #$ab           -    X     X      X      X      -       -      -      2    8   21
+		74  SKB* $ab,X          X    -     -      -      -      -       -      -      2    4   20
+		77  SKB* #$ab           -    X     -      -      -      -       -      -      2    6   21
+		80  SKB* #$ab           X    -     -      -      -      -       -      -      2    2   20
+		82  SKB* #$ab           X    -     -      -      -      -       -      -      2    2   20
+		82  SKB* #$ab           -    X     X      X      X      -       -      -      2    2   21
+		83  SKB* #$ab           -    X     X      X      X      -       -      -      2    6   21
+		87  SKB* #$ab           -    X     -      -      -      -       -      -      2    3   21
+		89  SKB* #$ab           X    -     -      -      -      -       -      -      2    2   20
+		8B  SKB* #$ab           -    X     X      X      X      X       -      -      2    2   21
+		93  SKB* #$ab           -    X     X      X      X      -       -      -      2    6   21
+		97  SKB* #$ab           -    X     -      -      -      -       -      -      2    4   21
+		A3  SKB* #$ab           -    X     X      X      X      -       -      -      2    6   21
+		A7  SKB* #$ab           -    X     -      -      -      -       -      -      2    3   21
+		AB  SKB* #$ab           -    X     X      X      X      X       -      -      2    2   21
+		B3  SKB* #$ab           -    X     X      X      X      -       -      -      2    5   21
+		B7  SKB* #$ab           -    X     -      -      -      -       -      -      2    4   21
+		C2  SKB* #$ab           X    -     -      -      -      -       -      -      2    2   20
+		C2  SKB* #$ab           -    X     X      X      X      -       -      -      2    2   21
+		C3  SKB* #$ab           -    X     X      X      X      -       -      -      2    8   21
+		C7  SKB* #$ab           -    X     -      -      -      -       -      -      2    5   21
+		CB  SKB* #$ab           -    X     X      X      -      X       -      -      2    2   21
+		D3  SKB* #$ab           -    X     X      X      X      -       -      -      2    8   21
+		D4  SKB* $ab,X          X    -     -      -      -      -       -      -      2    4   20
+		D4  SKB* #$ab           -    X     X      X      X      -       -      -      2    4   21
+		D7  SKB* #$ab           -    X     -      -      -      -       -      -      2    6   21
+		E2  SKB* #$ab           X    -     -      -      -      -       -      -      2    2   20
+		E2  SKB* #$ab           -    X     X      X      X      X       -      -      2    2   21
+		E3  SKB* #$ab           -    X     X      X      X      -       -      -      2    8   21
+		E7  SKB* #$ab           -    X     -      -      -      -       -      -      2    5   21
+		EB  SKB* #$ab           -    X     X      X      X      X       -      -      2    2   21
+		F3  SKB* #$ab           -    X     X      X      X      -       -      -      2    8   21
+		F4  SKB* $ab,X          X    -     -      -      -      -       -      -      2    4   20
+		F4  SKB* #$ab           -    X     X      X      X      -       -      -      2    4   21
+		F7  SKB* #$ab           -    X     -      -      -      -       -      -      2    6   21
+
+		Op  Format              6502 65c02 R65c02 65c02S HuC6280 65ce02 65c816 Size Cyc References
+		0C  SKW* $abcd          X    -     -      -      -       -      -      3    4   20
+		0F  SKW* $abcd          -    X     -      -      -       -      -      3    6   21
+		1B  SKW* $abcd          -    X     X      X      X       -      -      3    7   21
+		1C  SKW* $abcd,X        X    -     -      -      -       -      -      3    4   3,20
+		1F  SKW* $abcd          -    X     -      -      -       -      -      3    7   21
+		2F  SKW* $abcd          -    X     -      -      -       -      -      3    6   21
+		3B  SKW* $abcd          -    X     X      X      X       -      -      3    7   21
+		3C  SKW* $abcd,X        X    -     -      -      -       -      -      3    4   3,20
+		3F  SKW* $abcd          -    X     -      -      -       -      -      3    7   21
+		4F  SKW* $abcd          -    X     -      -      -       -      -      3    6   21
+		5B  SKW* $abcd          -    X     X      X      X       -      -      3    7   21
+		5C  SKW* $abcd,X        X    -     -      -      -       -      -      3    4   3,20
+		5C  SKW* $abcd          -    X     X      X      X       -      -      3    4   21
+		5F  SKW* $abcd          -    X     -      -      -       -      -      3    7   21
+		6F  SKW* $abcd          -    X     -      -      -       -      -      3    6   21
+		7B  SKW* $abcd          -    X     X      X      X       -      -      3    7   21
+		7C  SKW* $abcd,X        X    -     -      -      -       -      -      3    4   3,20
+		7F  SKW* $abcd          -    X     -      -      -       -      -      3    7   21
+		8F  SKW* $abcd          -    X     -      -      -       -      -      3    4   21
+		9B  SKW* $abcd          -    X     X      X      X       -      -      3    5   21
+		9F  SKW* $abcd          -    X     -      -      -       -      -      3    5   21
+		AF  SKW* $abcd          -    X     -      -      -       -      -      3    4   21
+		BB  SKW* $abcd          -    X     X      X      X       -      -      3    4   21
+		BF  SKW* $abcd          -    X     -      -      -       -      -      3    4   21
+		CF  SKW* $abcd          -    X     -      -      -       -      -      3    6   21
+		DB  SKW* $abcd          -    X     X      -      X       -      -      3    7   21
+		DC  SKW* $abcd,X        X    -     -      -      -       -      -      3    4   3,20
+		DC  SKW* $abcd          -    X     X      X      X       -      -      3    4   21
+		DF  SKW* $abcd          -    X     -      -      -       -      -      3    7   21
+		EF  SKW* $abcd          -    X     -      -      -       -      -      3    6   21
+		FB  SKW* $abcd          -    X     X      X      X       -      -      3    7   21
+		FC  SKW* $abcd,X        X    -     -      -      -       -      -      3    4   3,20
+		FC  SKW* $abcd          -    X     X      X      X       -      -      3    4   21
+		FF  SKW* $abcd          -    X     -      -      -       -      -      3    7   21
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		87  SMB0 $ab            -    -     X      X       X      -      2    5   23,25
+		97  SMB1 $ab            -    -     X      X       X      -      2    5   23,25
+		A7  SMB2 $ab            -    -     X      X       X      -      2    5   23,25
+		B7  SMB3 $ab            -    -     X      X       X      -      2    5   23,25
+		C7  SMB4 $ab            -    -     X      X       X      -      2    5   23,25
+		D7  SMB5 $ab            -    -     X      X       X      -      2    5   23,25
+		E7  SMB6 $ab            -    -     X      X       X      -      2    5   23,25
+		F7  SMB7 $ab            -    -     X      X       X      -      2    5   23,25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		03  ST0  #$ab           -    -     -      X       -      -      2    4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		13  ST1  #$ab           -    -     -      X       -      -      2    4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		23  ST2  #$ab           -    -     -      X       -      -      2    4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		81  STA  ($ab,X)        X    X     X      X       X      X      2    6   1,2,22,25
+		82  STA  ($ab,S),Y      -    -     -      -       X      -      2    6
+		83  STA  $ab,S          -    -     -      -       -      X      2    4   1
+		85  STA  $ab            X    X     X      X       X      X      2    3   1,2,22
+		87  STA  [$ab]          -    -     -      -       -      X      2    6   1,2
+		8D  STA  $abcd          X    X     X      X       X      X      3    4   1,22
+		8F  STA  $abcdef        -    -     -      -       -      X      4    5   1
+		91  STA  ($ab),Y        X    X     X      X       X      X      2    6   1,2,25
+		92  STA  ($ab)          -    X     X      X       -      X      2    5   1,2,23
+		92  STA  ($ab),Z        -    -     -      -       X      -      2    5
+		93  STA  ($ab,S),Y      -    -     -      -       -      X      2    7   1
+		95  STA  $ab,X          X    X     X      X       X      X      2    4   1,2,25
+		97  STA  [$ab],Y        -    -     -      -       -      X      2    6   1,2
+		99  STA  $abcd,Y        X    X     X      X       X      X      3    5   1,25
+		9D  STA  $abcd,X        X    X     X      X       X      X      3    5   1,25
+		9F  STA  $abcdef,X      -    -     -      -       -      X      4    5   1
+
+		Op  Format              6502 65c02 R65c02 65c02S HuC6280 65ce02 65c816 Size Cyc References
+		DB  STP                 -    -     -      X      -       -      X      1    3   14
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		86  STX  $ab            X    X     X      X       X      X      2    3   2,10,22
+		8E  STX  $abcd          X    X     X      X       X      X      3    4   10,22
+		96  STX  $ab,Y          X    X     X      X       X      X      2    4   2,10,25
+		9B  STX  $abcd,Y        -    -     -      -       X      -      3    4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		84  STY  $ab            X    X     X      X       X      X      2    3   2,10,22
+		8B  STY  $abcd,X        -    -     -      -       X      -      3    4
+		8C  STY  $abcd          X    X     X      X       X      X      3    4   10,22
+		94  STY  $ab,X          X    X     X      X       X      X      2    4   2,10,25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		64  STZ  $ab            -    X     X      X       X      X      2    3   1,2,22
+		74  STZ  $ab,X          -    X     X      X       X      X      2    4   1,2,25
+		9C  STZ  $abcd          -    X     X      X       X      X      3    4   1,22
+		9E  STZ  $abcd,X        -    X     X      X       X      X      3    5   1,25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		02  SXY                 -    -     -      X       -      -      1    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		5B  TAB                 -    -     -      -       X      -      1    1
+
+		Op  Format                   6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc   References
+		F3  TAI  $1234,$5678,#$9ABC  -    -     -      X       -      -      7    17+6n 24
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		53  TAM  #$ab           -    -     -      X       -      -      2    5
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		AA  TAX                 X    X     X      X       X      X      1    2   25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		A8  TAY                 X    X     X      X       X      X      1    2   25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		4B  TAZ                 -    -     -      -       X      -      1    1
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		7B  TBA                 -    -     -      -       X      -      1    1
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		5B  TCD                 -    -     -      -       -      X      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		1B  TCS                 -    -     -      -       -      X      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		7B  TDC                 -    -     -      -       -      X      1    2
+
+		Op  Format                   6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc   References
+		C3  TDD  $1234,$5678,#$9ABC  -    -     -      X       -      -      7    17+6n 24
+
+		Op  Format                   6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc   References
+		E3  TIA  $1234,$5678,#$9ABC  -    -     -      X       -      -      7    17+6n 24
+
+		Op  Format                   6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc   References
+		73  TII  $1234,$5678,#$9ABC  -    -     -      X       -      -      7    17+6n 24
+
+		Op  Format                   6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc   References
+		D3  TIN  $1234,$5678,#$9ABC  -    -     -      X       -      -      7    17+6n 24
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		43  TMA  #$ab           -    -     -      X       -      -      2    4
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		14  TRB  $ab            -    X     X      X       X      X      2    5   2,5,22,25
+		1C  TRB  $abcd          -    X     X      X       X      X      3    6   5,22,25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		04  TSB  $ab            -    X     X      X       X      X      2    5   2,5,22,25
+		0C  TSB  $abcd          -    X     X      X       X      X      3    6   5,22,25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		3B  TSC                 -    -     -      -       -      X      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		83  TST  #$ab,$cd       -    -     -      X       -      -      3    7
+		93  TST  #$ab,$cdef     -    -     -      X       -      -      4    8
+		A3  TST  #$ab,$cd,X     -    -     -      X       -      -      3    7
+		B3  TST  #$ab,$cdef,X   -    -     -      X       -      -      4    8
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		BA  TSX                 X    X     X      X       X      X      1    2   25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		0B  TSY                 -    -     -      -       X      -      1    1
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		8A  TXA                 X    X     X      X       X      X      1    2   25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		9A  TXS                 X    X     X      X       X      X      1    2   25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		9B  TXY                 -    -     -      -       -      X      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		98  TYA                 X    X     X      X       X      X      1    2   25
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		2B  TYS                 -    -     -      -       X      -      1    1
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		BB  TYX                 -    -     -      -       -      X      1    2
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		6B  TZA                 -    -     -      -       X      -      1    1
+
+		Op  Format              6502 65c02 R65c02 65c02S HuC6280 65ce02 65c816 Size Cyc References
+		CB  WAI                 -    -     -      X      -       -      X      1    3   15
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		42  WDM                 -    -     -      -       -      X      2    2   16
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		EB  XBA                 -    -     -      -       -      X      1    3
+
+		Op  Format              6502 65c02 R65c02 HuC6280 65ce02 65c816 Size Cyc References
+		FB  XCE                 -    -     -      -       -      X      1    2

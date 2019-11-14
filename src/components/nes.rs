@@ -19,8 +19,15 @@ impl NesData {
             cartridge: [0u8; 0xBFDF],
         }
     }
-    pub fn insert_cartridge(&mut self, cartridge: [u8; 0xBFDF]) {}
-    pub fn reset_memory(&mut self) {}
+    /// Insert memory in the nes game in the cartridge data space.
+    pub fn insert_cartridge(&mut self, cartr: [u8; 0xBFDF]) {
+        self.cartridge = cartr;
+    }
+    /// Reset the whole memory around.
+    pub fn reset_memory(&mut self) {
+        self.ram = [0u8;0x2000];
+        self.cartridge = [0u8;0xBFDF];
+    }
 }
 
 impl DataActions for NesData {
