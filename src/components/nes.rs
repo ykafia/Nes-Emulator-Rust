@@ -1,5 +1,6 @@
 // use super::super::components::*;
 use super::super::utils::*;
+use super::super::*;
 pub struct NesData {
     /// Ram data, from 0x0000 to 0x1FFF
     pub ram: [u8; 0x2000],
@@ -9,7 +10,7 @@ pub struct NesData {
 
 pub trait DataActions {
     fn write(&mut self, addr: u16, data: u8);
-    fn read(&mut self, addr: u16, read_only: bool) -> u8;
+    fn read(&self, addr: u16, read_only: bool, ppu : Option<PPU>) -> u8;
 }
 
 impl NesData {
@@ -31,7 +32,7 @@ impl NesData {
 }
 
 impl DataActions for NesData {
-    fn read(&mut self, addr: u16, read_only: bool) -> u8 {
+    fn read(&self, addr: u16, read_only: bool, ppu : Option<PPU>) -> u8 {
         match addr.to_where() {
             NESComponents::RAM => match read_only {
                 true => self.ram[(addr % 0x07ff) as usize],
@@ -42,11 +43,15 @@ impl DataActions for NesData {
                 false => self.cartridge[(addr - 0x4020) as usize],
             },
             NESComponents::PPU =>
-            //TODO: Do the PPU read
             {
-                match read_only {
-                    true => 0u8,
-                    false => 0u8,
+                match ppu {
+                    Some(x) => {
+                        x.ppu_read(addr,read_only)
+                    },
+                    _ => {
+                        println!("No ppu given");
+                        0
+                    }
                 }
             }
             _ => 0u8,
@@ -74,6 +79,8 @@ impl AddrConvert<NESComponents> for u16 {
         let x = *self;
         if x < 0x2000 {
             NESComponents::RAM
+        } else if x >= 0x2000 && x < 0x3FFF {
+            NESComponents::PPU
         } else if x >= 0x4020 && x < 0xFFFF {
             NESComponents::CARTRIDGE
         } else if x >= 0x2000 && x < 0x3FFF {

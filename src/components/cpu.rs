@@ -3,7 +3,6 @@
 use super::super::utils::*;
 use super::instruction_generator::get_lookup_list;
 use super::*;
-//TODO: Implement the rest of the cpu instructions
 
 /// Struct representing the 6502 cpu's data
 pub struct CPU6502 {
@@ -217,7 +216,7 @@ impl CPU6502 {
 impl CpuIO for CPU6502 {
     fn read(&mut self, nes: &mut NesData, addr: u16, read_only: bool) -> u8 {
         //TODO: check if the address size is in the correct
-        nes.read(addr, read_only)
+        nes.read(addr, read_only, None)
     }
     fn write(&mut self, nes: &mut NesData, addr: u16, data: u8) {
         nes.write(addr, data);
