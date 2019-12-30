@@ -73,7 +73,7 @@ struct CartridgeHeader {
     /// TV system, PRG-RAM presence (unofficial, rarely used extension)
     flag10 : u8,
     /// Unused padding (should be filled with zero, but some rippers put their name across bytes 7-15)
-    padding : [u8;4]
+    padding : [u8;8]
     
 }
 
@@ -88,7 +88,7 @@ impl CartridgeHeader {
             flag8 : 0,
             flag9 : 0,
             flag10 : 0,
-            padding : [0;4]
+            padding : [0;8]
         }
     }
 }
