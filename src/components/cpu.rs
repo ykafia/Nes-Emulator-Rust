@@ -238,12 +238,12 @@ impl CPU6502 {
 }
 
 impl CpuIO for CPU6502 {
-    fn read(&mut self, nes: &mut NesData, addr: u16, read_only: bool) -> u8 {
-        //TODO: check if the address size is in the correct
+    //TODO: Check if the NES should be readable or writable by the cpu
+    fn read(&mut self, nes: &mut NesData, addr: u16, read_only: bool) -> u8 {        
         nes.read(addr, read_only, None)
     }
     fn write(&mut self, nes: &mut NesData, addr: u16, data: u8) {
-        nes.write(addr, data);
+        nes.write(addr, data, None);
     }
 }
 

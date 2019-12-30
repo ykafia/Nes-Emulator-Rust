@@ -14,14 +14,14 @@ pub fn test_cpu(cpu: &mut CPU6502, nes: &mut NesData, depth: Option<usize>) {
 
     let term = Term::stdout();
     // Set the reset vector to the cartridge memory address
-    nes.write(0xFFFC, 0x20);
-    nes.write(0xFFFD, 0x40);
+    nes.write(0xFFFC, 0x20, None);
+    nes.write(0xFFFD, 0x40, None);
 
     // get the Assembly code
     let code: Vec<u8> = test_code();
     // Writes the code in the ram with offset 0x8000
     for i in 0..code.len() {
-        nes.write(0x4020 + i as u16, code[i]);
+        nes.write(0x4020 + i as u16, code[i], None);
     }
     cpu.power(nes);
     while input.trim() != "quit" {

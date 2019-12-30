@@ -5,9 +5,11 @@ use super::*;
 /// It should probably be handled by the computer itself depending the design.
 /// This component handles the pictures drawn on the screen,
 /// it has access to some shared rom from the cartridge and has its own ram components.
+/// The registers here are addressible in specific places for the CPU.
+/// The CPU should be able to call the PPU by providing 
 pub struct PPU {
     /// Ram data, from 0x2000 to 0x2FFF
-    pub ram: [u8; 0x1000],
+    pub name_table: [u8; 0x1000],
     /// Pattern data, from 0x0000 to 0x1FFF
     pub pattern: [u8; 0x2000],
     /// Pallette data, from 0x3000 to 0x3FFF
@@ -38,7 +40,7 @@ pub struct PPU {
 impl PPU {
     pub fn new() -> PPU {
         PPU {
-            ram: [0u8; 0x1000],
+            name_table: [0u8; 0x1000],
             pattern: [0u8; 0x2000],
             pallette: [0u8; 0x0100],
             oam: [0u8; 256],
@@ -53,11 +55,14 @@ impl PPU {
             status: 0,
         }
     }
+    pub fn clock(&mut self) {
+
+    }
     pub fn ppu_write(&mut self, addr: u16, data: u8) {
         match addr.to_where() {
             PPUComponents::PALLETTE => self.pallette[addr as usize] = data,
             PPUComponents::PATTERN => self.pattern[addr as usize] = data,
-            PPUComponents::RAM => self.ram[addr as usize] = data,
+            PPUComponents::RAM => self.name_table[addr as usize] = data,
         }
     }
     pub fn ppu_read(&self, addr: u16, read_only: bool) -> u8 {
@@ -65,15 +70,53 @@ impl PPU {
             // TODO: do the pattern read from the cartridge.
             PPUComponents::PALLETTE => self.pallette[addr as usize],
             PPUComponents::PATTERN => self.pattern[addr as usize],
-            PPUComponents::RAM => self.ram[addr as usize],
+            PPUComponents::RAM => self.name_table[addr as usize],
         }
     }
+
+    fn get_control_flag(&mut self, f: PPUCTRL) -> u8 {
+        match (self.status & f.bits) > 0 {
+            true => 1,
+            false => 0,
+        }
+    }
+    fn set_control_flag(&mut self, f: PPUCTRL, v: bool) {
+        match v {
+            true => self.status |= f.bits,
+            false => self.status &= !(f.bits),
+        }
+    }
+    fn get_status_flag(&mut self, f: PPUSTATUS) -> u8 {
+        match (self.status & f.bits) > 0 {
+            true => 1,
+            false => 0,
+        }
+    }
+    fn set_status_flag(&mut self, f: PPUSTATUS, v: bool) {
+        match v {
+            true => self.status |= f.bits,
+            false => self.status &= !(f.bits),
+        }
+    }
+    fn get_mask_flag(&mut self, f: PPUMASK) -> u8 {
+        match (self.status & f.bits) > 0 {
+            true => 1,
+            false => 0,
+        }
+    }
+    fn set_mask_flag(&mut self, f: PPUMASK, v: bool) {
+        match v {
+            true => self.status |= f.bits,
+            false => self.status &= !(f.bits),
+        }
+    }
+    // These functions might not work since the PPU is called from the NesData.
     #[warn(dead_code)]
-    fn cpu_read(&mut self, cpu: &mut CPU6502, nes: &mut NesData, addr: u16, read_only: bool) -> u8 {
+    fn cpu_read(cpu: &mut CPU6502, nes: &mut NesData, addr: u16, read_only: bool) -> u8 {
         cpu.read(nes, addr, true)
     }
     #[warn(dead_code)]
-    fn cpu_write(&mut self, cpu: &mut CPU6502, nes: &mut NesData, addr: u16, data: u8) {
+    fn cpu_write(cpu: &mut CPU6502, nes: &mut NesData, addr: u16, data: u8) {
         cpu.write(nes, addr, data);
     }
 }
@@ -167,4 +210,10 @@ bitflags! {
         /// (due to register not being updated for this address)
         const UNUSED = !( Self::O.bits | Self::S.bits | Self::V.bits );
     }
+}
+
+enum PPUFLAGS {
+    CONTROL,
+    MASK,
+    STATUS
 }

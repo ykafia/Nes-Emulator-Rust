@@ -3,6 +3,7 @@ pub use self::cpu::*;
 pub use self::instruction_generator::get_lookup_list;
 pub use self::nes::*;
 pub use self::ppu::*;
+pub use self::cartridge::*;
 #[macro_use]
 use bitflags::*;
 
@@ -11,3 +12,4 @@ mod cpu;
 mod instruction_generator;
 mod nes;
 mod ppu;
+mod cartridge;
