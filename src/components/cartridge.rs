@@ -81,8 +81,8 @@ impl CartridgeHeader {
     fn new() -> CartridgeHeader{
         CartridgeHeader {
             name : [0x4E,0x45,0x53,0x1A],
-            prg_size : 0,
-            chr_size : 0,
+            prg_rom_size : 0,
+            chr_rom_size : 0,
             flag6 : 0,
             flag7 : 0,
             flag8 : 0,
