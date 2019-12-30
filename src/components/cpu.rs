@@ -61,6 +61,30 @@ pub enum FLAGS6502 {
     /// Negative
     N = 1 << 7,
 }
+//TODO : Decide if it's useful
+bitflags! {
+    
+    pub struct CPUFLAGS : u8 {
+        /// Carry bit
+        const C = 1 << 0;
+        /// Zero
+        const Z = 1 << 1;
+        /// Disable interrupts
+        const I = 1 << 2;
+        /// Decimal mode
+        const D = 1 << 3;
+        /// Break
+        const B = 1 << 4;
+        /// Unused
+        const U = 1 << 5;
+        /// Overfow
+        const V = 1 << 6;
+        /// Negative
+        const N = 1 << 7;
+    }
+}
+
+
 
 /// A struct representing instructions by name and corresponding function.
 
