@@ -67,7 +67,6 @@ impl PPU {
     }
     pub fn ppu_read(&self, addr: u16, read_only: bool) -> u8 {
         match addr.to_where() {
-            // TODO: do the pattern read from the cartridge.
             PPUComponents::PALLETTE => self.pallette[addr as usize],
             PPUComponents::PATTERN => self.pattern[addr as usize],
             PPUComponents::RAM => self.name_table[addr as usize],
@@ -110,14 +109,14 @@ impl PPU {
             false => self.status &= !(f.bits),
         }
     }
-    // These functions might not work since the PPU is called from the NesData.
-    #[warn(dead_code)]
-    fn cpu_read(cpu: &mut CPU6502, nes: &mut NesData, addr: u16, read_only: bool) -> u8 {
-        cpu.read(nes, addr, true)
+    
+    /// Reads from the NES common data such as rom and patterns.
+    fn nes_read(nes: &mut NesData, addr: u16, read_only: bool) -> u8 {
+        nes.read(addr, read_only, None)
     }
-    #[warn(dead_code)]
-    fn cpu_write(cpu: &mut CPU6502, nes: &mut NesData, addr: u16, data: u8) {
-        cpu.write(nes, addr, data);
+    
+    fn nes_write(nes: &mut NesData, addr: u16, data: u8) {
+        nes.write(addr, data, None)
     }
 }
 
