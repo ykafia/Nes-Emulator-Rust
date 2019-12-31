@@ -4,7 +4,7 @@ use std::io::prelude::*;
 use super::*;
 
 pub struct Cartridge {
-    pub data : [u8; 0xBFDF],
+    pub data : Vec<u8>,
     pub program_rom : Vec<u8>,
     pub character_rom : Vec<u8>,
     pub mapper_id : u8,
@@ -15,7 +15,7 @@ pub struct Cartridge {
 impl Cartridge {
     pub fn new() -> Cartridge {
         Cartridge {
-            data : [0u8; 0xBFDF],
+            data : Vec::new(),
             program_rom : Vec::new(),
             character_rom : Vec::new(),
             mapper_id : 0,
@@ -25,22 +25,16 @@ impl Cartridge {
     }
     pub fn load(&mut self, pathfile:&str) {
         let mut file = File::open(pathfile).unwrap();
-        let mut contents = Vec::new();
-        file.read_to_end(&mut contents).unwrap();
-        match contents.len() > self.len() {
-            true => {
-                for i in 0..contents.len() {
-                    self.data[i] = contents[i];
-                }
-            },
-            false => panic!("The file is too large to be loaded by the NES.")
-        }
+        file.read_to_end(&mut self.data).unwrap();
     }
     pub fn len(&self) -> usize{
         self.data.len()
     }
     pub fn to_vec(&self) -> Vec<u8> {
         self.data.to_vec()
+    }
+    pub fn as_slice(&self) -> &[u8] {
+        self.data.as_slice()
     }
 }
 

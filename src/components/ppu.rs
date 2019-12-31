@@ -6,7 +6,7 @@ use super::*;
 /// This component handles the pictures drawn on the screen,
 /// it has access to some shared rom from the cartridge and has its own ram components.
 /// The registers here are addressible in specific places for the CPU.
-/// The CPU should be able to call the PPU by providing 
+/// The CPU should be able to call the PPU by providing
 pub struct PPU {
     /// Ram data, from 0x2000 to 0x2FFF
     pub name_table: [u8; 0x1000],
@@ -55,34 +55,48 @@ impl PPU {
             status: 0,
         }
     }
-    pub fn clock(&mut self) {
-
-    }
+    pub fn clock(&mut self) {}
     pub fn ppu_write(&mut self, addr: u16, data: u8) {
         match addr.to_where() {
-            PPUComponents::PALLETTE => self.pallette[addr as usize] = data,
-            PPUComponents::PATTERN => self.pattern[addr as usize] = data,
-            PPUComponents::RAM => self.name_table[addr as usize] = data,
+            PPUComponents::PALLETTE => {
+                self.pallette[addr.to_component_data(PPUComponents::PALLETTE)] = data
+            }
+            PPUComponents::PATTERN => {
+                self.pattern[addr.to_component_data(PPUComponents::PATTERN)] = data
+            }
+            PPUComponents::NAMETABLE => {
+                self.name_table[addr.to_component_data(PPUComponents::NAMETABLE)] = data
+            }
+            PPUComponents::NTMIRROR => {
+                self.name_table[addr.to_component_data(PPUComponents::NTMIRROR)] = data
+            }
         }
     }
     pub fn ppu_read(&self, addr: u16, read_only: bool) -> u8 {
         match addr.to_where() {
-            PPUComponents::PALLETTE => self.pallette[addr as usize],
-            PPUComponents::PATTERN => self.pattern[addr as usize],
-            PPUComponents::RAM => self.name_table[addr as usize],
+            PPUComponents::PALLETTE => {
+                self.pallette[addr.to_component_data(PPUComponents::PALLETTE)]
+            }
+            PPUComponents::PATTERN => self.pattern[addr.to_component_data(PPUComponents::PATTERN)],
+            PPUComponents::NAMETABLE => {
+                self.name_table[addr.to_component_data(PPUComponents::NAMETABLE)]
+            }
+            PPUComponents::NTMIRROR => {
+                self.name_table[addr.to_component_data(PPUComponents::NTMIRROR)]
+            }
         }
     }
 
     fn get_control_flag(&mut self, f: PPUCTRL) -> u8 {
-        match (self.status & f.bits) > 0 {
+        match (self.ctrl & f.bits) > 0 {
             true => 1,
             false => 0,
         }
     }
     fn set_control_flag(&mut self, f: PPUCTRL, v: bool) {
         match v {
-            true => self.status |= f.bits,
-            false => self.status &= !(f.bits),
+            true => self.ctrl |= f.bits,
+            false => self.ctrl &= !(f.bits),
         }
     }
     fn get_status_flag(&mut self, f: PPUSTATUS) -> u8 {
@@ -98,45 +112,68 @@ impl PPU {
         }
     }
     fn get_mask_flag(&mut self, f: PPUMASK) -> u8 {
-        match (self.status & f.bits) > 0 {
+        match (self.mask & f.bits) > 0 {
             true => 1,
             false => 0,
         }
     }
     fn set_mask_flag(&mut self, f: PPUMASK, v: bool) {
         match v {
-            true => self.status |= f.bits,
-            false => self.status &= !(f.bits),
+            true => self.mask |= f.bits,
+            false => self.mask &= !(f.bits),
         }
     }
-    
     /// Reads from the NES common data such as rom and patterns.
     fn nes_read(nes: &mut NesData, addr: u16, read_only: bool) -> u8 {
         nes.read(addr, read_only, None)
     }
-    
     fn nes_write(nes: &mut NesData, addr: u16, data: u8) {
         nes.write(addr, data, None)
     }
 }
 
-enum PPUComponents {
-    RAM,
+pub enum PPUComponents {
     PATTERN,
+    NAMETABLE,
+    /// Nametable 0 mirror from 0x2000-0x2EFF
+    NTMIRROR,
     PALLETTE,
 }
 
-impl AddrConvert<PPUComponents> for u16 {
+impl AddrWhere<PPUComponents> for u16 {
     fn to_where(&self) -> PPUComponents {
         let x = *self;
         if x < 0x2000 {
             PPUComponents::PATTERN
         } else if x >= 0x2000 && x < 0x3000 {
-            PPUComponents::RAM
+            PPUComponents::NAMETABLE
+        } else if x >= 0x3000 && x < 0x3EFF {
+            PPUComponents::NTMIRROR
         } else {
             PPUComponents::PALLETTE
         }
     }
+}
+
+trait AddrConvert<Component> {
+    fn to_component_data(&self, output: Component) -> usize;
+}
+
+impl AddrConvert<PPUComponents> for u16 {
+    fn to_component_data(&self, output: PPUComponents) -> usize {
+        match output {
+            PPUComponents::PATTERN => self.clone() as usize,
+            PPUComponents::NAMETABLE => (self - 0x2000) as usize,
+            PPUComponents::NTMIRROR => (self - 0x2000) as usize,
+            PPUComponents::PALLETTE => (self - 0x3000) as usize,
+        }
+    }
+}
+
+enum PPUFLAGS {
+    CONTROL,
+    MASK,
+    STATUS,
 }
 
 bitflags! {
@@ -209,10 +246,4 @@ bitflags! {
         /// (due to register not being updated for this address)
         const UNUSED = !( Self::O.bits | Self::S.bits | Self::V.bits );
     }
-}
-
-enum PPUFLAGS {
-    CONTROL,
-    MASK,
-    STATUS
 }

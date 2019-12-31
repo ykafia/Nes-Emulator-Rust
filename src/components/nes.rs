@@ -56,8 +56,7 @@ impl DataActions for NesData {
                 true => self.cartridge[(addr - 0x4020) as usize],
                 false => self.cartridge[(addr - 0x4020) as usize],
             },
-            NESComponents::PPU =>
-            {
+            NESComponents::PPU => {
                 match ppu {
                     Some(x) => {
                         x.ppu_read(addr,read_only)
@@ -96,7 +95,7 @@ enum NESComponents {
 
 
 /// Helper to dispatch an address to a component/register
-impl AddrConvert<NESComponents> for u16 {
+impl AddrWhere<NESComponents> for u16 {
     fn to_where(&self) -> NESComponents {
         let x = *self;
         if x < 0x2000 {

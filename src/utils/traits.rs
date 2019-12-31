@@ -72,6 +72,7 @@ pub trait InBetween<T> {
 /// Traits that gives the components to where you should read or write data.
 /// Typically if you're in the NESData you want to know if you're reading from the cartridge,
 /// the ram or the mapper. T here is supposed to be en ENUM that you have to match to read and write
-pub trait AddrConvert<T> {
+pub trait AddrWhere<T> {
     fn to_where(&self) -> T;
 }
+
