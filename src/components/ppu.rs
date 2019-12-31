@@ -58,32 +58,18 @@ impl PPU {
     pub fn clock(&mut self) {}
     pub fn ppu_write(&mut self, addr: u16, data: u8) {
         match addr.to_where() {
-            PPUComponents::PALLETTE => {
-                self.pallette[addr.to_component_data(PPUComponents::PALLETTE)] = data
-            }
-            PPUComponents::PATTERN => {
-                self.pattern[addr.to_component_data(PPUComponents::PATTERN)] = data
-            }
-            PPUComponents::NAMETABLE => {
-                self.name_table[addr.to_component_data(PPUComponents::NAMETABLE)] = data
-            }
-            PPUComponents::NTMIRROR => {
-                self.name_table[addr.to_component_data(PPUComponents::NTMIRROR)] = data
-            }
+            PPUComponents::PALLETTE => self.pallette[addr.to_component_data()] = data,
+            PPUComponents::PATTERN => self.pattern[addr.to_component_data()] = data,
+            PPUComponents::NAMETABLE => self.name_table[addr.to_component_data()] = data,
+            PPUComponents::NTMIRROR => self.name_table[addr.to_component_data()] = data,
         }
     }
     pub fn ppu_read(&self, addr: u16, read_only: bool) -> u8 {
         match addr.to_where() {
-            PPUComponents::PALLETTE => {
-                self.pallette[addr.to_component_data(PPUComponents::PALLETTE)]
-            }
-            PPUComponents::PATTERN => self.pattern[addr.to_component_data(PPUComponents::PATTERN)],
-            PPUComponents::NAMETABLE => {
-                self.name_table[addr.to_component_data(PPUComponents::NAMETABLE)]
-            }
-            PPUComponents::NTMIRROR => {
-                self.name_table[addr.to_component_data(PPUComponents::NTMIRROR)]
-            }
+            PPUComponents::PALLETTE => self.pallette[addr.to_component_data()],
+            PPUComponents::PATTERN => self.pattern[addr.to_component_data()],
+            PPUComponents::NAMETABLE => self.name_table[addr.to_component_data()],
+            PPUComponents::NTMIRROR => self.name_table[addr.to_component_data()],
         }
     }
 
@@ -155,13 +141,17 @@ impl AddrWhere<PPUComponents> for u16 {
     }
 }
 
+
 trait AddrConvert<Component> {
-    fn to_component_data(&self, output: Component) -> usize;
+    fn to_component_data(&self) -> usize;
 }
 
-impl AddrConvert<PPUComponents> for u16 {
-    fn to_component_data(&self, output: PPUComponents) -> usize {
-        match output {
+impl AddrConvert<PPUComponents> for u16
+where
+    u16: AddrWhere<PPUComponents>,
+{
+    fn to_component_data(&self) -> usize {
+        match self.to_where() {
             PPUComponents::PATTERN => self.clone() as usize,
             PPUComponents::NAMETABLE => (self - 0x2000) as usize,
             PPUComponents::NTMIRROR => (self - 0x2000) as usize,

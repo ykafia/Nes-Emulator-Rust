@@ -115,3 +115,21 @@ impl AddrWhere<NESComponents> for u16 {
         }
     }
 }
+
+
+// TODO: find a way for DRY coding
+
+/// Trait that converts an address to the position it should have in the array
+/// of its struct
+/// This trait was rewritten to keep it enclosed in this crate.
+trait AddrConvert<Component> {
+    fn to_comp_data(&self) -> usize;
+}
+impl AddrConvert<NESComponents> for u16 where u16 : AddrWhere<NESComponents> {
+    fn to_comp_data(&self) -> usize {
+        match self.to_where() {
+            NESComponents::RAM => (self + 0) as usize,
+            _ => (self + 0) as usize
+        }
+    }
+}
