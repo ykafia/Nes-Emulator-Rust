@@ -11,8 +11,9 @@ pub struct CPU6502 {
     /// supports using the status register for carrying,
     /// overflow detection, and so on.
     pub a: u8,
-    /// Indexes X & Y
+    /// Index register X
     pub x: u8,
+    /// Index register Y
     pub y: u8,
     /// Stack Pointer
     /// S is byte-wide and can be accessed using interrupts,
@@ -444,7 +445,7 @@ impl CpuApplyFunctions for CPU6502 {
 }
 
 impl OperationCodes for CPU6502 {
-    /// Add with carry, Done
+    /// Add with carry
     fn ADC(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let tmp: u16 = (self.a + self.fetched_data + FLAGS6502::C as u8) as u16;
@@ -458,7 +459,7 @@ impl OperationCodes for CPU6502 {
         self.a = (tmp & 0x00FF) as u8;
         1u8
     }
-    /// Bitwise AND, Done
+    /// Bitwise AND
     fn AND(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         self.a = self.a & self.fetched_data;
@@ -466,7 +467,7 @@ impl OperationCodes for CPU6502 {
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         1u8
     }
-    /// Arithmetic Shift Left, Done
+    /// Arithmetic Shift Left
     fn ASL(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         self.a = self.fetched_data;
@@ -474,7 +475,7 @@ impl OperationCodes for CPU6502 {
         self.a = self.a << 1;
         0u8
     }
-    /// Branch on carry clear, Done
+    /// Branch on carry clear
     fn BCC(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::C) == 0 {
             self.cycles += 1;
@@ -486,7 +487,7 @@ impl OperationCodes for CPU6502 {
         }
         0u8
     }
-    /// Branch on carry set, Done
+    /// Branch on carry set
     fn BCS(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::C) == 1 {
             self.cycles += 1;
@@ -498,7 +499,7 @@ impl OperationCodes for CPU6502 {
         }
         0u8
     }
-    /// Branch if equal, Done
+    /// Branch if equal
     fn BEQ(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::Z) == 1 {
             self.cycles += 1;
@@ -510,7 +511,7 @@ impl OperationCodes for CPU6502 {
         }
         0u8
     }
-    /// Bit test, Done (by hand)
+    /// Bit test (by hand)
     fn BIT(&mut self, nes: &mut NesData) -> u8 {
         //TODO: Check if the opcode is the 89 version
         self.fetch_data(nes);
@@ -520,7 +521,7 @@ impl OperationCodes for CPU6502 {
         self.set_flag(FLAGS6502::N, !result.get_high_bit());
         0u8
     }
-    /// Branch if minus, Done
+    /// Branch if minus
     fn BMI(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::N) == 1 {
             self.cycles += 1;
@@ -532,7 +533,7 @@ impl OperationCodes for CPU6502 {
         }
         0u8
     }
-    /// Branch not equal, Done
+    /// Branch not equal
     fn BNE(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::Z) == 0 {
             self.cycles += 1;
@@ -544,7 +545,7 @@ impl OperationCodes for CPU6502 {
         }
         0u8
     }
-    /// Branch if positive, Done
+    /// Branch if positive
     fn BPL(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::N) == 0 {
             self.cycles += 1;
@@ -556,7 +557,7 @@ impl OperationCodes for CPU6502 {
         }
         0u8
     }
-    /// Break, Done
+    /// Break
     fn BRK(&mut self, nes: &mut NesData) -> u8 {
         self.set_flag(FLAGS6502::B, true);
         self.stkp = self.stkp.checked_add(1).unwrap_or(0);
@@ -576,7 +577,7 @@ impl OperationCodes for CPU6502 {
         self.set_flag(FLAGS6502::B, true);
         0u8
     }
-    /// Branch if overflow clear, Done
+    /// Branch if overflow clear
     fn BVC(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::V) == 0 {
             self.cycles += 1;
@@ -591,7 +592,7 @@ impl OperationCodes for CPU6502 {
         }
         0u8
     }
-    /// Branch if overflow set, Done
+    /// Branch if overflow set
     fn BVS(&mut self) -> u8 {
         if self.get_flag(FLAGS6502::V) == 1 {
             self.cycles += 1;
@@ -603,27 +604,27 @@ impl OperationCodes for CPU6502 {
         }
         0u8
     }
-    /// Clear carry flag, Done
+    /// Clear carry flag
     fn CLC(&mut self) -> u8 {
         self.set_flag(FLAGS6502::C, false);
         0u8
     }
-    /// Clear decimal mode, Done
+    /// Clear decimal mode
     fn CLD(&mut self) -> u8 {
         self.set_flag(FLAGS6502::C, false);
         0u8
     }
-    /// Clear interupt disabled, Done
+    /// Clear interupt disabled
     fn CLI(&mut self) -> u8 {
         self.set_flag(FLAGS6502::I, false);
         0u8
     }
-    /// Clear overflow flag, Done
+    /// Clear overflow flag
     fn CLV(&mut self) -> u8 {
         self.set_flag(FLAGS6502::V, false);
         0u8
     }
-    /// Compare, Done
+    /// Compare
     fn CMP(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let value = self.a - self.fetched_data;
@@ -632,7 +633,7 @@ impl OperationCodes for CPU6502 {
         self.set_flag(FLAGS6502::C, self.a >= value);
         1u8
     }
-    /// Compare X register, Done
+    /// Compare X register
     fn CPX(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let result = self.x - self.fetched_data;
@@ -641,7 +642,7 @@ impl OperationCodes for CPU6502 {
         self.set_flag(FLAGS6502::C, self.x >= self.fetched_data);
         0u8
     }
-    /// Compare Y register, Done
+    /// Compare Y register
     fn CPY(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let result = self
@@ -654,7 +655,7 @@ impl OperationCodes for CPU6502 {
         self.set_flag(FLAGS6502::C, self.y >= self.fetched_data);
         0u8
     }
-    /// Decrement value, Done
+    /// Decrement value
     fn DEC(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let tmp = self.fetched_data - 1;
@@ -664,14 +665,14 @@ impl OperationCodes for CPU6502 {
 
         0u8
     }
-    /// Decrement X register, Done
+    /// Decrement X register
     fn DEX(&mut self) -> u8 {
         self.x -= 1;
         self.set_flag(FLAGS6502::Z, self.x == 0);
         self.set_flag(FLAGS6502::N, !self.x.get_high_bit());
         0u8
     }
-    /// Decrement Y register, Done
+    /// Decrement Y register
     fn DEY(&mut self) -> u8 {
         self.y -= 1;
         self.set_flag(FLAGS6502::Z, self.y == 0);
@@ -780,7 +781,7 @@ impl OperationCodes for CPU6502 {
         self.set_flag(FLAGS6502::N, !self.a.get_high_bit());
         1u8
     }
-    /// Push accumulator, Done
+    /// Push accumulator
     fn PHA(&mut self, nes: &mut NesData) -> u8 {
         self.write(nes, 0x0100 + self.stkp as u16, self.a);
         self.stkp -= 1;
@@ -794,7 +795,7 @@ impl OperationCodes for CPU6502 {
         self.set_flag(FLAGS6502::U, false);
         0u8
     }
-    /// Pull accumulator, Done
+    /// Pull accumulator
     fn PLA(&mut self, nes: &mut NesData) -> u8 {
         self.stkp += 1;
         self.a = self.read(nes, 0x0100 + self.stkp as u16, true);
@@ -842,7 +843,7 @@ impl OperationCodes for CPU6502 {
 
         0u8
     }
-    /// Return from interupt, Done
+    /// Return from interupt
     fn RTI(&mut self, nes: &mut NesData) -> u8 {
         self.stkp += 1;
         self.status = self.read(nes, 0x0100 + self.stkp as u16, true);
@@ -863,7 +864,7 @@ impl OperationCodes for CPU6502 {
 
         0u8
     }
-    /// Substract with carry, Done
+    /// Substract with carry
     fn SBC(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let value = self.fetched_data ^ 0x00FF;

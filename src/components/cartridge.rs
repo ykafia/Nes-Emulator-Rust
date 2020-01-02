@@ -4,13 +4,19 @@ use std::io::prelude::*;
 use super::*;
 #[warn(non_camel_case_types)] 
 pub struct Cartridge {
+    /// The complete ROM
     pub data : Vec<u8>,
+    /// ROM containing the program
     pub program_rom : Vec<u8>,
+    /// ROM containing the sprites
     pub character_rom : Vec<u8>,
+    /// Id of the mapper
     pub mapper_id : u8,
+    /// Number of program banks
     pub prgm_bank_n : u8,
+    /// Number of CHR banks
     pub chr_bank_n : u8,
-    pub header : ROM
+
 }
 
 impl Cartridge {
@@ -22,18 +28,24 @@ impl Cartridge {
             mapper_id : 0,
             prgm_bank_n : 0,
             chr_bank_n : 0,
-            header : ROM::None
         }
     }
     pub fn load(&mut self, pathfile:&str) {
         let mut file = File::open(pathfile).unwrap();
         file.read_to_end(&mut self.data).unwrap();
-
-        if self.data[7] & 0x0C == 0 && self.data[12..15].to_vec().iter().sum::<u8>() == 0 {
-            self.header = ROM::new_ines(self.data.to_vec()); 
-        } else if self.data[7] & 0x0C == 0x08 {
-            self.header = ROM::new_nes2(self.data.to_vec());
+        match Self::get_type(self.data.to_vec()) {
+            NesFileType::INES => {
+                let x = INes::new(self.data.to_vec());
+                self.program_rom = self.data[15..(x.get_prg_size() as usize)].to_vec();
+                self.character_rom = self.data[15..(x.get_chr_size() as usize)].to_vec();
+                self.mapper_id = x.get_mapper_id();
+                
+            },
+            NesFileType::NES2 => {
+                let x = Nes2::new(self.data.to_vec());
+            }
         }
+        
         
     }
     pub fn len(&self) -> usize{
@@ -45,6 +57,14 @@ impl Cartridge {
     pub fn as_slice(&self) -> &[u8] {
         self.data.as_slice()
     }
+    pub fn get_type(data : Vec<u8>) -> NesFileType{
+        if data[7] & 0x0C == 0 && data[12..15].to_vec().iter().sum::<u8>() == 0 {
+            NesFileType::INES
+        } else /*if self.data[7] & 0x0C == 0x08 */{
+            NesFileType::NES2
+        }
+    }
+    
 }
 
 impl Index<usize> for Cartridge {
@@ -59,103 +79,74 @@ impl IndexMut<usize> for Cartridge{
         &mut self.data[index]
     }
 }
-
-
-
-
-pub enum ROM{
-    ARCHAIC ,
-    
-    iNES {
-        name : [u8;4],
-        prg_rom_size : u8,
-        chr_rom_size : u8,
-        /// Mapper, mirroring, battery, trainer
-        flag6 : u8,
-        /// Mapper, VS/Playchoice, NES 2.0
-        flag7 : u8,
-        /// Program size
-        flag8 : u8,
-        /// TV system (rarely used extension)
-        flag9 : u8,
-        /// TV system, PRG-RAM presence (unofficial, rarely used extension)
-        flag10 : u8,
-    },
-    NES2 {
-        /// [0-3]  Name. 
-        name : [u8;4],
-        /// [4] Program rom size 
-        prg_rom_size : u8,
-        /// [5] CHR rom size 
-        chr_rom_size : u8,
-        /// [6] Mapper, mirroring, battery, trainer
-        flag6 : u8,
-        /// [7] Mapper, VS/Playchoice, NES 2.0
-        flag7 : u8,
-        /// [8] Mapper value for NES2.0 files, byte 8
-        mapper : u8,
-        /// [9] PRG + CHR rom size contained in one byte, PRG -> low, CHR -> high
-        rm_sizes_msb : u8,
-        /// [10] PRG-RAM/EEPROM size.
-        /// low -> PRG-RAM (volatile) shift count.
-        /// high -> PRG-NVRAM/EEPROM (non-volatile) shift count.
-        /// If the shift count is zero, there is no PRG-(NV)RAM.
-        /// If the shift count is non-zero, the actual size is
-        /// "64 << shift count" bytes, i.e. 8192 bytes for a shift count of 7. 
-        eeprom_size : u8,
-        /// [11] low -> CHR-RAM size (volatile) shift count
-        /// high -> CHR-NVRAM size (non-volatile) shift count
-        /// If the shift count is zero, there is no CHR-(NV)RAM.
-        /// If the shift count is non-zero, the actual size is
-        /// "64 << shift count" bytes, i.e. 8192 bytes for a shift count of 7.
-        chr_ram_size : u8,
-        /// [12] CPU/PPU Timing 
-        /// only 4 different values (only 2 lowest bits used)
-        /// 0: RP2C02 ("NTSC NES")
-        /// 1: RP2C07 ("Licensed PAL NES")
-        /// 2: Multiple-region
-        /// 3: UMC 6527P ("Dendy")
-        cpu_ppu_timing : u8,
-        /// [13] Vs. System Type (when data[7] & 3 = 3)
-        /// low : PPU Type
-        /// high : hardware type
-        vs_system_type : u8,
-        /// [13] Extended Console Type (when data[7] & 3 =3)
-        extended_console_type : u8,
-        /// [14] Miscellaneous ROMs : Number of miscellaneous ROMs present (max = 3)
-        misc_roms : u8,
-        /// [15] Default Expansion Device
-        default_expansion_dvc : u8
-
-    },
-    None
+// region Nes files
+pub struct INes {
+    name : [u8;4],
+    prg_rom_size : u8,
+    chr_rom_size : u8,
+    /// Mapper, mirroring, battery, trainer
+    flag6 : u8,
+    /// Mapper, VS/Playchoice, NES 2.0
+    flag7 : u8,
+    /// Program size
+    flag8 : u8,
+    /// TV system (rarely used extension)
+    flag9 : u8,
+    /// TV system, PRG-RAM presence (unofficial, rarely used extension)
+    flag10 : u8,
 }
 
-impl ROM {
-    fn new_ines(data : Vec<u8>) -> ROM {
-        ROM::iNES {
-            name : [ 
-                data[0],
-                data[1],
-                data[2],
-                data[3]
-            ],
-            prg_rom_size : data[4],
-            chr_rom_size : data[5],
-            /// Mapper, mirroring, battery, trainer
-            flag6 : data[6],
-            /// Mapper, VS/Playchoice, NES 2.0
-            flag7 : data[7],
-            /// Program size
-            flag8 : data[8],
-            /// TV system (rarely used extension)
-            flag9 : data[9],
-            /// TV system, PRG-RAM presence (unofficial, rarely used extension)
-            flag10 : data[10],
-        }
-    }
-    fn new_nes2(data : Vec<u8>) -> ROM {
-        ROM::NES2 {
+pub struct Nes2 {
+    /// [0-3]  Name. 
+    name : [u8;4],
+    /// [4] Program rom size 
+    prg_rom_size : u8,
+    /// [5] CHR rom size 
+    chr_rom_size : u8,
+    /// [6] Mapper, mirroring, battery, trainer
+    flag6 : u8,
+    /// [7] Mapper, VS/Playchoice, NES 2.0
+    flag7 : u8,
+    /// [8] Mapper value for NES2.0 files, byte 8
+    mapper : u8,
+    /// [9] PRG + CHR rom size contained in one byte, PRG -> low, CHR -> high
+    rm_sizes_msb : u8,
+    /// [10] PRG-RAM/EEPROM size.
+    /// low -> PRG-RAM (volatile) shift count.
+    /// high -> PRG-NVRAM/EEPROM (non-volatile) shift count.
+    /// If the shift count is zero, there is no PRG-(NV)RAM.
+    /// If the shift count is non-zero, the actual size is
+    /// "64 << shift count" bytes, i.e. 8192 bytes for a shift count of 7. 
+    eeprom_size : u8,
+    /// [11] low -> CHR-RAM size (volatile) shift count
+    /// high -> CHR-NVRAM size (non-volatile) shift count
+    /// If the shift count is zero, there is no CHR-(NV)RAM.
+    /// If the shift count is non-zero, the actual size is
+    /// "64 << shift count" bytes, i.e. 8192 bytes for a shift count of 7.
+    chr_ram_size : u8,
+    /// [12] CPU/PPU Timing 
+    /// only 4 different values (only 2 lowest bits used)
+    /// 0: RP2C02 ("NTSC NES")
+    /// 1: RP2C07 ("Licensed PAL NES")
+    /// 2: Multiple-region
+    /// 3: UMC 6527P ("Dendy")
+    cpu_ppu_timing : u8,
+    /// [13] Vs. System Type (when data[7] & 3 = 3)
+    /// low : PPU Type
+    /// high : hardware type
+    vs_system_type : u8,
+    /// [13] Extended Console Type (when data[7] & 3 =3)
+    extended_console_type : u8,
+    /// [14] Miscellaneous ROMs : Number of miscellaneous ROMs present (max = 3)
+    misc_roms : u8,
+    /// [15] Default Expansion Device
+    default_expansion_dvc : u8
+
+}
+
+impl Nes2 {
+    fn new(data : Vec<u8>) -> Nes2 {
+        Nes2 {
             name : [ 
                 data[0],
                 data[1],
@@ -186,8 +177,94 @@ impl ROM {
     }
 }
 
+impl INes {
+    fn new(data : Vec<u8>) -> INes {
+        INes {
+            name : [ 
+                data[0],
+                data[1],
+                data[2],
+                data[3]
+            ],
+            prg_rom_size : data[4],
+            chr_rom_size : data[5],
+            /// Mapper, mirroring, battery, trainer
+            flag6 : data[6],
+            /// Mapper, VS/Playchoice, NES 2.0
+            flag7 : data[7],
+            /// Program size
+            flag8 : data[8],
+            /// TV system (rarely used extension)
+            flag9 : data[9],
+            /// TV system, PRG-RAM presence (unofficial, rarely used extension)
+            flag10 : data[10],
+        }
+    }
+    
+}
+
+pub enum NesFileType{
+    INES,
+    NES2
+}
+
+// endregion
+
+
+pub trait HeaderData {
+    fn get_prg_size(&self) -> u8;
+    fn get_chr_size(&self) -> u8;
+    fn get_name(&self) -> Vec<u8>;
+    fn get_flag6(&self) -> u8;
+    fn get_flag7(&self) -> u8;
+    fn get_mapper_id(&self) -> u8;
+}
+
+
+impl HeaderData for INes{
+    fn get_prg_size(&self) -> u8{
+        self.prg_rom_size
+    }
+    fn get_chr_size(&self) -> u8{
+        self.chr_rom_size
+    }
+    fn get_name(&self) -> Vec<u8>{
+        self.name.to_vec()
+    }
+    fn get_flag6(&self) -> u8{
+        self.flag6
+    }
+    fn get_flag7(&self) -> u8 {
+        self.flag7
+    }
+    fn get_mapper_id(&self) -> u8 {
+        0
+    }
+}
+impl HeaderData for Nes2{
+    fn get_prg_size(&self) -> u8{
+        self.prg_rom_size
+    }
+    fn get_chr_size(&self) -> u8{
+        self.chr_rom_size
+    }
+    fn get_name(&self) -> Vec<u8>{
+        self.name.to_vec()
+    }
+    fn get_flag6(&self) -> u8{
+        self.flag6
+    }
+    fn get_flag7(&self) -> u8 {
+        self.flag7
+    }
+    fn get_mapper_id(&self) -> u8 {
+        self.mapper
+    }
+}
 
 //TODO: Check the NES2.0 format for a disambiguation (cf : http://wiki.nesdev.com/w/index.php/INES)
+
+
 
 bitflags! {
     pub struct FLAG6 : u8 {
@@ -204,6 +281,7 @@ bitflags! {
 
     }
 }
+
 bitflags! {
     pub struct FLAG7 : u8 {
         /// VS Unisystem

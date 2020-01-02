@@ -1,8 +1,9 @@
 mod components;
 mod test;
 mod utils;
-use components::*;
-use test::*;
+pub use components::*;
+pub use test::*;
+pub use utils::*;
 
 fn main() {
     let mut nes = NesData::new();
