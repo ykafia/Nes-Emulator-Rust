@@ -36,11 +36,12 @@ impl Cartridge {
         match Self::get_type(self.data.to_vec()) {
             NesFileType::INES => {
                 let x = INes::new(self.data.to_vec());
-                self.program_rom = self.data[15..(x.get_prg_size() as usize)].to_vec();
-                self.character_rom = self.data[15..(x.get_chr_size() as usize)].to_vec();
+                self.program_rom = self.data[15..x.get_prg_size()].to_vec();
+                self.character_rom = self.data[x.get_prg_size()..x.get_chr_size()].to_vec();
                 self.mapper_id = x.get_mapper_id();
                 
             },
+            // TODO : read NES2
             NesFileType::NES2 => {
                 let x = Nes2::new(self.data.to_vec());
             }
@@ -79,6 +80,9 @@ impl IndexMut<usize> for Cartridge{
         &mut self.data[index]
     }
 }
+
+
+
 // region Nes files
 pub struct INes {
     name : [u8;4],
@@ -208,12 +212,12 @@ pub enum NesFileType{
     NES2
 }
 
-// endregion
+
 
 
 pub trait HeaderData {
-    fn get_prg_size(&self) -> u8;
-    fn get_chr_size(&self) -> u8;
+    fn get_prg_size(&self) -> usize;
+    fn get_chr_size(&self) -> usize;
     fn get_name(&self) -> Vec<u8>;
     fn get_flag6(&self) -> u8;
     fn get_flag7(&self) -> u8;
@@ -222,11 +226,11 @@ pub trait HeaderData {
 
 
 impl HeaderData for INes{
-    fn get_prg_size(&self) -> u8{
-        self.prg_rom_size
+    fn get_prg_size(&self) -> usize{
+        16384 * self.prg_rom_size as usize
     }
-    fn get_chr_size(&self) -> u8{
-        self.chr_rom_size
+    fn get_chr_size(&self) -> usize{
+        8192 * self.chr_rom_size as usize  
     }
     fn get_name(&self) -> Vec<u8>{
         self.name.to_vec()
@@ -242,11 +246,11 @@ impl HeaderData for INes{
     }
 }
 impl HeaderData for Nes2{
-    fn get_prg_size(&self) -> u8{
-        self.prg_rom_size
+    fn get_prg_size(&self) -> usize{
+        16384 * self.prg_rom_size as usize
     }
-    fn get_chr_size(&self) -> u8{
-        self.chr_rom_size
+    fn get_chr_size(&self) -> usize{
+        8192 * self.chr_rom_size as usize  
     }
     fn get_name(&self) -> Vec<u8>{
         self.name.to_vec()
@@ -261,11 +265,11 @@ impl HeaderData for Nes2{
         self.mapper
     }
 }
-
+// endregion
 //TODO: Check the NES2.0 format for a disambiguation (cf : http://wiki.nesdev.com/w/index.php/INES)
 
 
-
+// region BITFLAGS
 bitflags! {
     pub struct FLAG6 : u8 {
         /// Mirroring : 0 -> horizontal, 1 -> vertical
@@ -315,3 +319,5 @@ bitflags! {
 
     }
 }
+
+// endregion
