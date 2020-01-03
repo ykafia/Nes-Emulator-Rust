@@ -1,4 +1,3 @@
-use std::ops::{Index,IndexMut};
 use std::fs::File;
 use std::io::prelude::*;
 use super::*;
@@ -74,18 +73,6 @@ impl Cartridge {
     
 }
 
-impl Index<usize> for Cartridge {
-    type Output = u8;
-    fn index(&self, index : usize) -> &u8 {
-        &self.data[index]
-    }
-}
-
-impl IndexMut<usize> for Cartridge{
-    fn index_mut(&mut self, index : usize) -> &mut u8 {
-        &mut self.data[index]
-    }
-}
 
 
 

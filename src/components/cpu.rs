@@ -223,10 +223,10 @@ impl CPU6502 {
         }
     }
     pub fn read(&self, nes : &NesData,addr : u16,read_only : bool) -> u8 {
-        nes.read(addr,read_only,None)
+        nes.cpu_read(addr,read_only,None)
     }
     pub fn write(&self, nes : &mut NesData,addr : u16, data : u8) {
-        nes.write(addr,data,None)
+        nes.cpu_write(addr,data,None)
     }
     pub fn clock(&mut self, nes: &mut NesData) {
         if self.cycles == 0 {

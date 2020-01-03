@@ -5,12 +5,12 @@ use super::*;
 /// This component handles the pictures drawn on the screen,
 /// it has access to some shared rom from the cartridge and has its own ram components.
 /// The registers here are addressible in specific places for the CPU.
-/// The CPU should be able to call the PPU by providing
+/// The CPU should be able to call the PPU by providing.
+/// 
+/// Pattern rom is supposed to happen in the cartridge as chr_rom
 pub struct PPU {
     /// Ram data, from 0x2000 to 0x2FFF
     pub name_table: [u8; 0x1000],
-    /// Pattern data, from 0x0000 to 0x1FFF
-    pub pattern: [u8; 0x2000],
     /// Pallette data, from 0x3000 to 0x3FFF
     pub pallette: [u8; 0x0100],
     /// Object attribute memory, should be shared with the cpu
@@ -40,7 +40,6 @@ impl PPU {
     pub fn new() -> PPU {
         PPU {
             name_table: [0u8; 0x1000],
-            pattern: [0u8; 0x2000],
             pallette: [0u8; 0x0100],
             oam: [0u8; 256],
             addr: 0,
@@ -55,18 +54,18 @@ impl PPU {
         }
     }
     pub fn clock(&mut self) {}
-    pub fn write(&mut self, addr: u16, data: u8) {
+    pub fn write(&mut self, nes : &mut NesData, addr: u16, data: u8) {
         match addr.to_where() {
-            PPUComponents::PATTERN => self.pattern[addr.to_component_data()] = data,
+            PPUComponents::PATTERN => self.chr_write(nes,addr, data),
             PPUComponents::PALLETTE => self.pallette[addr.to_component_data()] = data,
             PPUComponents::NAMETABLE => self.name_table[addr.to_component_data()] = data,
             PPUComponents::NTMIRROR => self.name_table[addr.to_component_data()] = data,
         }
     }
-    fn read(&self, addr: u16, read_only: bool) -> u8 {
+    fn read(&self, addr: u16, nes : &NesData, read_only: bool) -> u8 {
         match addr.to_where() {
             PPUComponents::PALLETTE => self.pallette[addr.to_component_data()],
-            PPUComponents::PATTERN => self.pattern[addr.to_component_data()],
+            PPUComponents::PATTERN => self.chr_read(nes,addr,read_only),
             PPUComponents::NAMETABLE => self.name_table[addr.to_component_data()],
             PPUComponents::NTMIRROR => self.name_table[addr.to_component_data()],
         }
@@ -134,11 +133,11 @@ impl PPU {
         }
     }
     /// Reads from the NES common data such as rom and patterns.
-    fn nes_read(nes: &mut NesData, addr: u16, read_only: bool) -> u8 {
-        nes.read(addr, read_only, None)
+    pub fn chr_read(&self, nes: &NesData, addr: u16, read_only: bool) -> u8 {
+        nes.ppu_read(addr, read_only)
     }
-    fn nes_write(nes: &mut NesData, addr: u16, data: u8) {
-        nes.write(addr, data, None)
+    pub fn chr_write(&self, nes: &mut NesData, addr: u16, data: u8) {
+        nes.ppu_write(addr, data)
     }
 }
 

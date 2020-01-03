@@ -38,19 +38,19 @@ impl NesData {
         self.ram = [0u8;0x2000];
         self.cartridge = Cartridge::new();
     }
-    pub fn read(&self, addr: u16, read_only: bool, ppu : Option<PPU>) -> u8 {
+    pub fn cpu_read(&self, addr: u16, read_only: bool, ppu : Option<PPU>) -> u8 {
         match addr.to_where() {
             NESComponents::RAM => match read_only {
                 true => self.ram[(addr % 0x07ff) as usize],
                 false => self.ram[(addr % 0x07ff) as usize],
             },
             NESComponents::CARTRIDGE => match read_only {
-                true => self.cartridge[(addr - 0x4020) as usize],
-                false => self.cartridge[(addr - 0x4020) as usize],
+                true => self.cartridge.program_rom[(addr - 0x4020) as usize],
+                false => self.cartridge.program_rom[(addr - 0x4020) as usize],
             },
             NESComponents::PPU => {
                 match ppu {
-                    Some(mut x) => {
+                    Some(x) => {
                         x.cpu_read(addr,read_only)
                     },
                     _ => {
@@ -61,7 +61,7 @@ impl NesData {
             _ => 0u8,
         }
     }
-    pub fn write(&mut self, addr: u16, data: u8, ppu : Option<PPU>) {
+    pub fn cpu_write(&mut self, addr: u16, data: u8, ppu : Option<PPU>) {
         match addr.to_where() {
             NESComponents::RAM => self.ram[(addr % 0x07ff) as usize] = data,
             NESComponents::PPU => {
@@ -71,10 +71,17 @@ impl NesData {
                     None => panic!("No PPU given")
                 }
             }
-            NESComponents::CARTRIDGE => self.cartridge[(addr - 0x4020) as usize] = data,
+            NESComponents::CARTRIDGE => self.cartridge.program_rom[(addr - 0x4020) as usize] = data,
             _ => (),
         }
     }
+    pub fn ppu_read(&self, addr: u16, read_only : bool) -> u8 {
+        self.cartridge.character_rom[(addr & 0x1FFF) as usize]
+    }
+    pub fn ppu_write(&mut self, addr: u16, data: u8) {
+        self.cartridge.character_rom[(addr & 0x1FFF) as usize] = data
+    }
+    
 }
 
 
