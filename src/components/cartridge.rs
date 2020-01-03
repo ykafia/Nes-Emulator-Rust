@@ -44,6 +44,9 @@ impl Cartridge {
             // TODO : read NES2
             NesFileType::NES2 => {
                 let x = Nes2::new(self.data.to_vec());
+                self.program_rom = self.data[15..x.get_prg_size()].to_vec();
+                self.character_rom = self.data[x.get_prg_size()..x.get_chr_size()].to_vec();
+                self.mapper_id = x.get_mapper_id();
             }
         }
         
@@ -65,6 +68,9 @@ impl Cartridge {
             NesFileType::NES2
         }
     }
+    pub fn ppu_read(&self, addr : u16) -> (bool,u8) {
+        (true,0)
+    }
     
 }
 
@@ -81,7 +87,20 @@ impl IndexMut<usize> for Cartridge{
     }
 }
 
-
+impl ReadWriteFunc for Cartridge {
+    fn cpu_read(nes: &mut NesData, addr: u16, read_only: bool) -> u8 {        
+        nes.read(addr, read_only, None)
+    }
+    fn cpu_write(nes: &mut NesData, addr: u16, data: u8) {
+        nes.write(addr, data, None);
+    }
+    fn ppu_read(ppu: &mut PPU, addr: u16, read_only: bool) -> u8 {
+        ppu.read(addr,read_only)
+    }
+    fn ppu_write(ppu: &mut PPU, addr: u16, data: u8){
+        ppu.write(addr,data);
+    }
+}
 
 // region Nes files
 pub struct INes {

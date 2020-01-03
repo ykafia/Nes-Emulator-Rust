@@ -1,3 +1,4 @@
+use super::*;
 pub trait BitGet {
     fn get_high_bit(&self) -> bool;
     fn get_next_bit(&self) -> bool;
@@ -74,5 +75,12 @@ pub trait InBetween<T> {
 /// the ram or the mapper. T here is supposed to be en ENUM that you have to match to read and write
 pub trait AddrWhere<T> {
     fn to_where(&self) -> T;
+}
+
+pub trait ReadWriteFunc{
+    fn cpu_read(nes: &mut NesData, addr: u16, read_only: bool) -> u8;
+    fn cpu_write( nes: &mut NesData, addr: u16, data: u8) ;
+    fn ppu_read(ppu: &mut PPU, addr: u16, read_only: bool) -> u8;
+    fn ppu_write( ppu: &mut PPU, addr: u16, data: u8) ;
 }
 

@@ -1,6 +1,5 @@
 // use super::super::components::*;
-use super::super::utils::*;
-use super::super::*;
+use super::utils::*;
 
 
 
@@ -13,10 +12,7 @@ pub struct NesData {
     pub system_counter : u128,
 }
 
-pub trait DataActions {
-    fn write(&mut self, addr: u16, data: u8, ppu : Option<PPU>);
-    fn read(&self, addr: u16, read_only: bool, ppu : Option<PPU>) -> u8;
-}
+
 
 impl NesData {
     pub fn new() -> NesData {
@@ -43,10 +39,7 @@ impl NesData {
         self.ram = [0u8;0x2000];
         self.cartridge = Cartridge::new();
     }
-}
-
-impl DataActions for NesData {
-    fn read(&self, addr: u16, read_only: bool, ppu : Option<PPU>) -> u8 {
+    pub fn read(&self, addr: u16, read_only: bool, ppu : Option<PPU>) -> u8 {
         match addr.to_where() {
             NESComponents::RAM => match read_only {
                 true => self.ram[(addr % 0x07ff) as usize],
@@ -58,8 +51,8 @@ impl DataActions for NesData {
             },
             NESComponents::PPU => {
                 match ppu {
-                    Some(x) => {
-                        x.ppu_read(addr,read_only)
+                    Some(mut x) => {
+                        PPU::ppu_read(&mut x,addr,read_only)
                     },
                     _ => {
                         panic!("No ppu given")
@@ -69,12 +62,12 @@ impl DataActions for NesData {
             _ => 0u8,
         }
     }
-    fn write(&mut self, addr: u16, data: u8, ppu : Option<PPU>) {
+    pub fn write(&mut self, addr: u16, data: u8, ppu : Option<PPU>) {
         match addr.to_where() {
             NESComponents::RAM => self.ram[(addr % 0x07ff) as usize] = data,
             NESComponents::PPU => {
                 match ppu {
-                    Some(mut x) => x.ppu_write(addr,data),
+                    Some(mut x) => PPU::ppu_write(&mut x,addr,data),
                     None => panic!("No PPU given")
                 }
             }
@@ -83,6 +76,7 @@ impl DataActions for NesData {
         }
     }
 }
+
 
 enum NESComponents {
     APU,

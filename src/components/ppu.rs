@@ -1,4 +1,3 @@
-use super::super::utils::*;
 use super::*;
 
 /// The Picture processing unit.
@@ -56,15 +55,15 @@ impl PPU {
         }
     }
     pub fn clock(&mut self) {}
-    pub fn ppu_write(&mut self, addr: u16, data: u8) {
+    pub fn write(&mut self, addr: u16, data: u8) {
         match addr.to_where() {
-            PPUComponents::PALLETTE => self.pallette[addr.to_component_data()] = data,
             PPUComponents::PATTERN => self.pattern[addr.to_component_data()] = data,
+            PPUComponents::PALLETTE => self.pallette[addr.to_component_data()] = data,
             PPUComponents::NAMETABLE => self.name_table[addr.to_component_data()] = data,
             PPUComponents::NTMIRROR => self.name_table[addr.to_component_data()] = data,
         }
     }
-    pub fn ppu_read(&self, addr: u16, read_only: bool) -> u8 {
+    pub fn read(&self, addr: u16, read_only: bool) -> u8 {
         match addr.to_where() {
             PPUComponents::PALLETTE => self.pallette[addr.to_component_data()],
             PPUComponents::PATTERN => self.pattern[addr.to_component_data()],
@@ -118,10 +117,27 @@ impl PPU {
     }
 }
 
+impl ReadWriteFunc for PPU {
+    fn cpu_read(nes: &mut NesData, addr: u16, read_only: bool) -> u8 {        
+        nes.read(addr, read_only, None)
+    }
+    fn cpu_write(nes: &mut NesData, addr: u16, data: u8) {
+        nes.write(addr, data, None);
+    }
+    fn ppu_read(ppu: &mut PPU, addr: u16, read_only: bool) -> u8 {
+        ppu.read(addr,read_only)
+    }
+    fn ppu_write(ppu: &mut PPU, addr: u16, data: u8){
+        ppu.write(addr,data);
+    }
+}
+
 pub enum PPUComponents {
+    /// Pattern table Contains the sprites, usually connected to the ROM
     PATTERN,
+    /// Considered as VRAM, can be mapped and extended by a ROM
     NAMETABLE,
-    /// Nametable 0 mirror from 0x2000-0x2EFF
+    /// Nametable 0 mirror from 0x2000-0x2EFF, mostly unused address range
     NTMIRROR,
     PALLETTE,
 }
