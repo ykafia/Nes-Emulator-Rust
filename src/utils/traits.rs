@@ -93,19 +93,19 @@ pub trait IOFromPPU {
     fn ppu_write(nes: &mut NesData, addr: u16, data: u8) ;
 }
 
-pub enum RW {
-    READ,
-    WRITE
+pub enum Source {
+    CPU,
+    PPU
 }
 /// Trait that maps an address to another defined by the [map chart](https://wiki.nesdev.com/w/index.php/Mapper#iNES_1.0_mapper_grid).
 /// mappers [000-255]
 pub trait INesMappers {
-    fn mapper_000 (mode : RW, addr : u16) -> usize;
+    fn mapper_000 (src : Source, addr : u16) -> usize;
 }
 /// Trait that maps an address to another defined by the [map chart](https://wiki.nesdev.com/w/index.php/Mapper#Plane_1).
 /// mappers [256-767]
 pub trait Nes2Mappers {
-    fn mapper_256 (mode : RW, addr : u16) -> usize;
+    fn map_read_256 (src : Source, addr : u16) -> usize;
 }
 
 

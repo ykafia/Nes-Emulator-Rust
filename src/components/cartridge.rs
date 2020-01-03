@@ -46,6 +46,7 @@ impl Cartridge {
                 self.program_rom = self.data[15..x.get_prg_size()].to_vec();
                 self.character_rom = self.data[x.get_prg_size()..x.get_chr_size()].to_vec();
                 self.mapper_id = x.get_mapper_id();
+                todo!()
             }
         }
         
@@ -310,6 +311,16 @@ bitflags! {
         /// 0: Board has no bus conflicts; 1: Board has bus conflicts
         const TRAINER = 1<<5;
 
+    }
+}
+
+// endregion
+
+
+// region Mappers
+impl INesMappers for Cartridge{
+    fn mapper_000(src: Source, addr: u16) -> usize {
+        0
     }
 }
 
