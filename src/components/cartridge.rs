@@ -87,20 +87,7 @@ impl IndexMut<usize> for Cartridge{
     }
 }
 
-impl ReadWriteFunc for Cartridge {
-    fn cpu_read(nes: &mut NesData, addr: u16, read_only: bool) -> u8 {        
-        nes.read(addr, read_only, None)
-    }
-    fn cpu_write(nes: &mut NesData, addr: u16, data: u8) {
-        nes.write(addr, data, None);
-    }
-    fn ppu_read(ppu: &mut PPU, addr: u16, read_only: bool) -> u8 {
-        ppu.read(addr,read_only)
-    }
-    fn ppu_write(ppu: &mut PPU, addr: u16, data: u8){
-        ppu.write(addr,data);
-    }
-}
+
 
 // region Nes files
 pub struct INes {

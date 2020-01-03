@@ -16,23 +16,23 @@ pub struct PPU {
     /// Object attribute memory, should be shared with the cpu
     pub oam: [u8; 256],
 
-    /// Control register, address : 0x2000
+    /// [0x2000] \ Control register
     pub ctrl: u8,
-    /// Mask register, address : 0x2001
+    /// [0x2001] \ Mask register
     pub mask: u8,
-    /// Status register, address : 0x2002
+    /// [0x2002] \ Status register
     pub status: u8,
-    /// OAM Read/Write address register, address : 0x2003
+    /// [0x2003] \ OAM Read/Write address register
     pub oam_addr: u8,
-    /// OAM Read/Write data register, address : 0x2004
+    /// [0x2004] \ OAM Read/Write data register
     pub oam_data: u8,
-    /// Fine scroll position register (two writes: X scroll, Y scroll), address : 0x2005
+    /// [0x2005] \ Fine scroll position register (two writes: X scroll, Y scroll)
     pub scroll: u8,
-    /// PPU Read/Write address register, address : 0x2006
+    /// [0x2006] \ PPU Read/Write address register
     pub addr: u8,
-    /// PPU data Read/Write register, address : 0x2007
+    /// [0x2007] \ PPU data Read/Write register
     pub data: u8,
-    /// OAM High adress register, address : 0x4014
+    /// [0x4014] \ OAM High adress register
     pub oam_dma: u8,
 }
 
@@ -63,7 +63,7 @@ impl PPU {
             PPUComponents::NTMIRROR => self.name_table[addr.to_component_data()] = data,
         }
     }
-    pub fn read(&self, addr: u16, read_only: bool) -> u8 {
+    fn read(&self, addr: u16, read_only: bool) -> u8 {
         match addr.to_where() {
             PPUComponents::PALLETTE => self.pallette[addr.to_component_data()],
             PPUComponents::PATTERN => self.pattern[addr.to_component_data()],
@@ -71,7 +71,32 @@ impl PPU {
             PPUComponents::NTMIRROR => self.name_table[addr.to_component_data()],
         }
     }
-
+    pub fn cpu_read(&self, addr:u16, read_only: bool) -> u8 {
+        match addr &0x7{
+            0x0 => self.ctrl,
+            0x1 => self.mask,
+            0x2 => self.status,
+            0x3 => self.oam_addr,
+            0x4 => self.oam_data,
+            0x5 => self.scroll,
+            0x6 => self.addr,
+            0x7 => self.data,
+            _ => 0u8
+        }
+    }
+    pub fn cpu_write(&mut self, addr:u16, data : u8){
+        match addr &0x7{
+            0x0 => self.ctrl = data,
+            0x1 => self.mask = data,
+            0x2 => self.status = data,
+            0x3 => self.oam_addr = data,
+            0x4 => self.oam_data = data,
+            0x5 => self.scroll = data,
+            0x6 => self.addr = data,
+            0x7 => self.data = data,
+            _ => ()
+        }
+    }
     fn get_control_flag(&mut self, f: PPUCTRL) -> u8 {
         match (self.ctrl & f.bits) > 0 {
             true => 1,
@@ -117,20 +142,7 @@ impl PPU {
     }
 }
 
-impl ReadWriteFunc for PPU {
-    fn cpu_read(nes: &mut NesData, addr: u16, read_only: bool) -> u8 {        
-        nes.read(addr, read_only, None)
-    }
-    fn cpu_write(nes: &mut NesData, addr: u16, data: u8) {
-        nes.write(addr, data, None);
-    }
-    fn ppu_read(ppu: &mut PPU, addr: u16, read_only: bool) -> u8 {
-        ppu.read(addr,read_only)
-    }
-    fn ppu_write(ppu: &mut PPU, addr: u16, data: u8){
-        ppu.write(addr,data);
-    }
-}
+
 
 pub enum PPUComponents {
     /// Pattern table Contains the sprites, usually connected to the ROM

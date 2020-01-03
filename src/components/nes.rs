@@ -1,4 +1,3 @@
-// use super::super::components::*;
 use super::utils::*;
 
 
@@ -52,7 +51,7 @@ impl NesData {
             NESComponents::PPU => {
                 match ppu {
                     Some(mut x) => {
-                        PPU::ppu_read(&mut x,addr,read_only)
+                        x.cpu_read(addr,read_only)
                     },
                     _ => {
                         panic!("No ppu given")
@@ -67,7 +66,8 @@ impl NesData {
             NESComponents::RAM => self.ram[(addr % 0x07ff) as usize] = data,
             NESComponents::PPU => {
                 match ppu {
-                    Some(mut x) => PPU::ppu_write(&mut x,addr,data),
+                    //TODO: Should ppu write work only on its registers?
+                    Some(mut x) => x.cpu_write(addr & 0x7,data),
                     None => panic!("No PPU given")
                 }
             }
