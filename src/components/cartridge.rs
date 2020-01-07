@@ -46,7 +46,6 @@ impl Cartridge {
                 self.program_rom = self.data[15..x.get_prg_size()].to_vec();
                 self.character_rom = self.data[x.get_prg_size()..x.get_chr_size()].to_vec();
                 self.mapper_id = x.get_mapper_id();
-                todo!()
             }
         }
         
