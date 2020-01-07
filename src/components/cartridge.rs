@@ -67,7 +67,12 @@ impl Cartridge {
             NesFileType::NES2
         }
     }
+    pub fn cpu_read(&self, addr : u16) -> (bool,u8) {
+        //TODO : read with mapper id
+        (true,0)
+    }
     pub fn ppu_read(&self, addr : u16) -> (bool,u8) {
+        //TODO : read with mapper id
         (true,0)
     }
     
@@ -310,16 +315,6 @@ bitflags! {
         /// 0: Board has no bus conflicts; 1: Board has bus conflicts
         const TRAINER = 1<<5;
 
-    }
-}
-
-// endregion
-
-
-// region Mappers
-impl INesMappers for Cartridge{
-    fn mapper_000(src: Source, addr: u16) -> usize {
-        0
     }
 }
 

@@ -100,7 +100,7 @@ pub enum Source {
 /// Trait that maps an address to another defined by the [map chart](https://wiki.nesdev.com/w/index.php/Mapper#iNES_1.0_mapper_grid).
 /// mappers [000-255]
 pub trait INesMappers {
-    fn mapper_000 (src : Source, addr : u16) -> usize;
+    fn mapper_000 (src : Source, addr : u16, n_p_banks : usize) -> usize;
 }
 /// Trait that maps an address to another defined by the [map chart](https://wiki.nesdev.com/w/index.php/Mapper#Plane_1).
 /// mappers [256-767]
