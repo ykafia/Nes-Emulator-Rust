@@ -186,7 +186,7 @@ where
         }
     }
 }
-
+#[allow(dead_code)]
 enum PPUFLAGS {
     CONTROL,
     MASK,

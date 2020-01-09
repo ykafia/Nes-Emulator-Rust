@@ -12,9 +12,9 @@ pub struct Cartridge {
     /// Id of the mapper
     pub mapper_id : u8,
     /// Number of program banks
-    pub prgm_bank_n : u8,
+    pub prgm_bank_n : usize,
     /// Number of CHR banks
-    pub chr_bank_n : u8,
+    pub chr_bank_n : usize,
 
 }
 
@@ -29,6 +29,9 @@ impl Cartridge {
             chr_bank_n : 0,
         }
     }
+    // pub fn read(&mut self, addr : u16, read_only : bool) -> u8 {
+        
+    // }
     pub fn load(&mut self, pathfile:&str) {
         let mut file = File::open(pathfile).unwrap();
         file.read_to_end(&mut self.data).unwrap();
@@ -69,11 +72,13 @@ impl Cartridge {
     }
     pub fn cpu_read(&self, addr : u16) -> (bool,u8) {
         //TODO : read with mapper id
-        (true,0)
+        let mapped_address = Mapper::map(self.mapper_id,Source::CPU,addr,self.prgm_bank_n);
+        (mapped_address.0,self.program_rom[mapped_address.1])
     }
     pub fn ppu_read(&self, addr : u16) -> (bool,u8) {
         //TODO : read with mapper id
-        (true,0)
+        let mapped_address = Mapper::map(self.mapper_id,Source::PPU,addr,self.chr_bank_n);
+        (mapped_address.0,self.character_rom[mapped_address.1])
     }
     
 }
@@ -82,6 +87,7 @@ impl Cartridge {
 
 
 // region Nes files
+#[allow(dead_code)]
 pub struct INes {
     name : [u8;4],
     prg_rom_size : u8,
@@ -97,7 +103,7 @@ pub struct INes {
     /// TV system, PRG-RAM presence (unofficial, rarely used extension)
     flag10 : u8,
 }
-
+#[allow(dead_code)]
 pub struct Nes2 {
     /// [0-3]  Name. 
     name : [u8;4],
