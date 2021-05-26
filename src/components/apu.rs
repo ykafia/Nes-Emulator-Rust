@@ -1,3 +1,11 @@
 pub struct APU {
-    pub ram: [u8; 8],
+    pub registers : [u8; 8],
+}
+
+impl APU {
+    pub fn new() -> APU {
+        APU {
+            registers : [0;8] 
+        }
+    }
 }

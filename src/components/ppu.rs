@@ -16,7 +16,7 @@ pub struct PPU {
 }
 
 impl PPU {
-    fn new() -> PPU {
+    pub fn new() -> PPU {
         PPU {
             ram: [0u8; 0x1000],
             pattern: [0u8; 0x2000],
@@ -24,14 +24,14 @@ impl PPU {
             OAM: [0u8; 256],
         }
     }
-    fn ppu_write(&mut self, addr: u16, data: u8) {
+    pub fn ppu_write(&mut self, addr: u16, data: u8) {
         match addr.to_where() {
             PPUComponents::PALLETTE => self.pallette[addr as usize] = data,
             PPUComponents::PATTERN => self.pattern[addr as usize] = data,
             PPUComponents::RAM => self.ram[addr as usize] = data,
         }
     }
-    fn ppu_read(&mut self, addr: u16, read_only: bool) -> u8 {
+    pub fn ppu_read(&mut self, addr: u16, read_only: bool) -> u8 {
         match addr.to_where() {
             PPUComponents::PALLETTE => self.pallette[addr as usize],
             PPUComponents::PATTERN => self.pattern[addr as usize],
@@ -48,21 +48,8 @@ impl PPU {
     }
 }
 
-enum PPUComponents {
+pub enum PPUComponents {
     RAM,
     PATTERN,
     PALLETTE,
-}
-
-impl AddrConvert<PPUComponents> for u16 {
-    fn to_where(&self) -> PPUComponents {
-        let x = *self;
-        if x < 0x2000 {
-            PPUComponents::PATTERN
-        } else if x >= 0x2000 && x < 0x3000 {
-            PPUComponents::RAM
-        } else {
-            PPUComponents::PALLETTE
-        }
-    }
 }
