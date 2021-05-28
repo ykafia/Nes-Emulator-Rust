@@ -1,5 +1,5 @@
-LDA #$FF  
-TAX 
-DEX       
-SBC #$c4  
+LDA #01
+ADC #02
+ADC #03
+STA #0000
 BRK

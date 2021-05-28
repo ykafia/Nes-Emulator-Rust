@@ -108,7 +108,7 @@ pub trait AddressingModes {
     /// Immediate : addressing mode, the second byte of the instruction contains the operands
     fn IMM(&mut self) -> u8;
     /// Zero Page : fetching only the second byte knowing the first one is zero. It looks for the 1st element in the instruction matrix. Performance
-    fn ZP0(&mut self) -> u8;
+    fn ZP0(&mut self, nes: &mut NesData) -> u8;
     /// Zero Page X : Adds only the second byte to the index range, faster adress accessing like ZP0    
     fn ZPX(&mut self, nes: &mut NesData) -> u8;
     /// Zero Page Y : Adds only the second byte to the index range, faster adress accessing like ZP0    
@@ -230,12 +230,12 @@ impl AddressingModes for CPU6502 {
         0u8
     }
     fn IMM(&mut self) -> u8 {
-        self.pc += 1;
         self.addr_abs = self.pc;
+        self.pc += 1;
         0u8
     }
-    fn ZP0(&mut self) -> u8 {
-        self.addr_abs = self.pc;
+    fn ZP0(&mut self, nes: &mut NesData) -> u8 {
+        self.addr_abs = nes.cpu_read(self.pc, true) as u16;
         self.pc += 1;
         self.addr_abs &= 0x00FF;
         0u8
@@ -405,7 +405,7 @@ impl CpuApplyFunctions for CPU6502 {
         match instruction.addr_mode.as_str() {
             "IMP" => self.IMP(),
             "IMM" => self.IMM(),
-            "ZP0" => self.ZP0(),
+            "ZP0" => self.ZP0(nes),
             "ZPX" => self.ZPX(nes),
             "ZPY" => self.ZPY(nes),
             "REL" => self.REL(nes),
@@ -543,9 +543,9 @@ impl OperationCodes for CPU6502 {
             (self.pc >> 8 & 0x00FF) as u8,
         );
         self.stkp = self.stkp.checked_add(1).unwrap_or(0);
-        self.write(nes, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
+        nes.cpu_write( 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
         self.stkp += 1;
-        self.write(nes, 0x0100 + self.stkp as u16, self.status);
+        nes.cpu_write( 0x0100 + self.stkp as u16, self.status);
         self.addr_abs = 0xFFFE;
         let lo = self.read(nes, self.addr_abs + 0, true) as u16;
         let hi = self.read(nes, self.addr_abs + 1, true) as u16;
@@ -635,7 +635,7 @@ impl OperationCodes for CPU6502 {
     fn DEC(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let tmp = self.fetched_data - 1;
-        self.write(nes, self.addr_rel, tmp);
+        nes.cpu_write( self.addr_rel, tmp);
         self.set_flag(FLAGS6502::Z, tmp == 0);
         self.set_flag(FLAGS6502::N, !tmp.get_high_bit());
 
@@ -667,7 +667,7 @@ impl OperationCodes for CPU6502 {
     fn INC(&mut self, nes: &mut NesData) -> u8 {
         self.fetch_data(nes);
         let temp = self.fetched_data + 1;
-        self.write(nes, self.addr_abs, temp);
+        nes.cpu_write( self.addr_abs, temp);
         self.set_flag(FLAGS6502::N, !temp.get_high_bit());
         self.set_flag(FLAGS6502::Z, temp == 0);
         0u8
@@ -694,9 +694,9 @@ impl OperationCodes for CPU6502 {
     /// Jump to sub routine, push current program counter to stack
     fn JSR(&mut self, nes: &mut NesData) -> u8 {
         self.pc -= 1;
-        self.write(nes, 0x0100 + self.stkp as u16, self.pc.get_high_byte());
+        nes.cpu_write( 0x0100 + self.stkp as u16, self.pc.get_high_byte());
         self.stkp -= 1;
-        self.write(nes, 0x0100 + self.stkp as u16, self.pc.get_high_byte());
+        nes.cpu_write( 0x0100 + self.stkp as u16, self.pc.get_high_byte());
         self.stkp -= 1;
         self.pc = self.addr_abs;
         0u8
@@ -734,7 +734,7 @@ impl OperationCodes for CPU6502 {
         tmp >>= 1;
         match self.lookup[self.curr_opcode as usize].addr_mode.as_str() {
             "IMP" => self.a = tmp,
-            _ => self.write(nes, self.addr_abs, tmp),
+            _ => nes.cpu_write( self.addr_abs, tmp),
         }
 
         self.set_flag(FLAGS6502::Z, tmp == 0);
@@ -759,13 +759,13 @@ impl OperationCodes for CPU6502 {
     }
     /// Push accumulator, Done
     fn PHA(&mut self, nes: &mut NesData) -> u8 {
-        self.write(nes, 0x0100 + self.stkp as u16, self.a);
+        nes.cpu_write( 0x0100 + self.stkp as u16, self.a);
         self.stkp -= 1;
         0u8
     }
     /// Push status in the stack
     fn PHP(&mut self, nes: &mut NesData) -> u8 {
-        self.write(nes, 0x0100 + self.stkp as u16, self.status | 0x10);
+        nes.cpu_write( 0x0100 + self.stkp as u16, self.status | 0x10);
         self.stkp -= 1;
         self.set_flag(FLAGS6502::B, false);
         self.set_flag(FLAGS6502::U, false);
@@ -797,7 +797,7 @@ impl OperationCodes for CPU6502 {
 
         match self.lookup[self.curr_opcode as usize].addr_mode.as_str() {
             "IMP" => self.a = tmp.get_low_byte(),
-            _ => self.write(nes, self.addr_abs, tmp.get_low_byte()),
+            _ => nes.cpu_write( self.addr_abs, tmp.get_low_byte()),
         }
 
         0u8
@@ -814,7 +814,7 @@ impl OperationCodes for CPU6502 {
 
         match self.lookup[self.curr_opcode as usize].addr_mode.as_str() {
             "IMP" => self.a = tmp,
-            _ => self.write(nes, self.addr_abs, tmp),
+            _ => nes.cpu_write( self.addr_abs, tmp),
         }
 
         0u8
@@ -873,17 +873,17 @@ impl OperationCodes for CPU6502 {
     }
     /// Store accumulator in memory
     fn STA(&mut self, nes: &mut NesData) -> u8 {
-        self.write(nes, self.addr_abs, self.a);
+        nes.cpu_write( self.addr_abs, self.a);
         0u8
     }
     /// Store X register in memory
     fn STX(&mut self, nes: &mut NesData) -> u8 {
-        self.write(nes, self.addr_abs, self.x);
+        nes.cpu_write( self.addr_abs, self.x);
         0u8
     }
     /// Store Y register in memory
     fn STY(&mut self, nes: &mut NesData) -> u8 {
-        self.write(nes, self.addr_abs, self.y);
+        nes.cpu_write( self.addr_abs, self.y);
         0u8
     }
     /// Transfer Accumulator to X
@@ -936,9 +936,10 @@ impl CPUFunctions for CPU6502 {
 
             self.cycles = self.lookup[self.curr_opcode as usize].cycles;
 
+            self.pc += 1;
             let additionnal_cycle_1 =
                 self.apply_addressing_mode(self.lookup[self.curr_opcode as usize].clone(), nes);
-            self.pc += 1;
+            
             let additionnal_cycle_2 =
                 self.apply_op(self.lookup[self.curr_opcode as usize].clone(), nes);
 
@@ -999,12 +1000,12 @@ impl CPUFunctions for CPU6502 {
                 ((self.pc >> 8) & 0x00FF) as u8,
             );
             self.stkp -= 1;
-            self.write(nes, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
+            nes.cpu_write( 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
             self.stkp -= 1;
             self.set_flag(FLAGS6502::B, false);
             self.set_flag(FLAGS6502::U, true);
             self.set_flag(FLAGS6502::I, true);
-            self.write(nes, 0x0100 + self.stkp as u16, self.status);
+            nes.cpu_write( 0x0100 + self.stkp as u16, self.status);
             self.stkp -= 1;
             self.addr_abs = 0xFFFE;
             let lo = self.read(nes, self.addr_abs + 0, true) as u16;
@@ -1026,12 +1027,12 @@ impl CPUFunctions for CPU6502 {
             ((self.pc >> 8) & 0x00FF) as u8,
         );
         self.stkp -= 1;
-        self.write(nes, 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
+        nes.cpu_write( 0x0100 + self.stkp as u16, (self.pc & 0x00FF) as u8);
         self.stkp -= 1;
         self.set_flag(FLAGS6502::B, false);
         self.set_flag(FLAGS6502::U, true);
         self.set_flag(FLAGS6502::I, true);
-        self.write(nes, 0x0100 + self.stkp as u16, self.status);
+        nes.cpu_write( 0x0100 + self.stkp as u16, self.status);
         self.stkp -= 1;
         self.addr_abs = 0xFFFA;
         let lo = self.read(nes, self.addr_abs + 0, true) as u16;

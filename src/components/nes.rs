@@ -11,7 +11,9 @@ pub struct NesData {
     /// APU Registers
     pub apu : APU,
     /// PPU struct containing the ppu data
-    pub ppu : PPU
+    pub ppu : PPU,
+    /// Clock counter
+    pub clock_counter : u128,
 }
 
 pub trait DataActions {
@@ -28,13 +30,15 @@ impl NesData {
             cartridge: [0u8; 0xBFDF],
             ppu_registers : [0u8; 0x0007],
             apu : APU::new(),
-            ppu : PPU::new()
+            ppu : PPU::new(),
+            clock_counter: 0,
         }
     }
     pub fn insert_cartridge(&mut self, cartridge: [u8; 0xBFDF]) {
         self.cartridge = cartridge;
     }
     pub fn reset_memory(&mut self) {}
+    pub fn clock(&mut self) {}
 }
 
 impl DataActions for NesData {
@@ -72,17 +76,22 @@ impl DataActions for NesData {
     fn ppu_write(&mut self, addr: u16, data: u8) {
         match addr.to_where() {
             PPUComponents::PALLETTE => self.ppu.pallette[addr as usize] = data,
-            PPUComponents::PATTERN => self.ppu.pattern[addr as usize] = data,
-            PPUComponents::RAM => self.ppu.ram[addr as usize] = data,
+            PPUComponents::PATTERN => self.ppu.pattern[addr as usize] = data, // TODO: Should it write on the ROM?
+            PPUComponents::NAMETABLES => {
+                let index = if (addr - 0x2000) & 0x0800 < 0x400 {0} else {1};
+                self.ppu.names[index][addr as usize] = data;
+            },
         }
     }
 
     fn ppu_read(&mut self, addr: u16, read_only: bool) -> u8 {
         match addr.to_where() {
             PPUComponents::PALLETTE => self.ppu.pallette[addr as usize],
-            PPUComponents::PATTERN => self.ppu.pattern[addr as usize],
-            PPUComponents::RAM => self.ppu.ram[addr as usize],
-            _ => 0
+            PPUComponents::PATTERN => self.cartridge[(addr + 0x4020) as usize],
+            PPUComponents::NAMETABLES => {
+                let index = if (addr - 0x2000) & 0x0800 < 0x400 {0} else {1};
+                self.ppu.names[index][((addr - 0x2000) & 0x0400) as usize]
+            },
         }
     }
 }
@@ -117,7 +126,7 @@ impl AddrConvert<PPUComponents> for u16 {
         if x < 0x2000 {
             PPUComponents::PATTERN
         } else if x >= 0x2000 && x < 0x3F00 {
-            PPUComponents::RAM
+            PPUComponents::NAMETABLES
         } else {
             PPUComponents::PALLETTE
         }
