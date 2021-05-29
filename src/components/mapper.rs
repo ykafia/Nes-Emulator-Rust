@@ -1,9 +1,9 @@
 use super::*;
-
+#[derive(Default)]
 pub struct Mapper {
     pub mapper_id: u16,
-    pub nb_prg_banks: u16,
-    pub nb_chr_banks: u16,
+    pub nb_prg_banks: usize,
+    pub nb_chr_banks: usize,
 }
 
 pub enum Source {
@@ -12,11 +12,11 @@ pub enum Source {
 }
 
 impl Mapper {
-    pub fn new(header: Vec<u8>) -> Self {
+    pub fn new(header: Header) -> Self {
         Mapper {
-            mapper_id: 0,
-            nb_prg_banks: 0,
-            nb_chr_banks: 0,
+            mapper_id: header.mapper_id(),
+            nb_prg_banks: header.nb_prg_banks.into(),
+            nb_chr_banks: header.nb_chr_banks.into(),
         }
     }
 
@@ -24,6 +24,7 @@ impl Mapper {
     pub fn map(&self, src: Source, addr: u16) -> Option<usize> {
         match self.mapper_id {
             0 => self.mapper_000(src, addr),
+            1 => self.mapper_001(src, addr),
             _ => None,
         }
     }
@@ -33,9 +34,9 @@ impl Mapper {
             Source::CPU => {
                 if addr >= 0x8000 {
                     if self.nb_prg_banks > 1 {
-                        Some(addr as usize & 0x7FFF)
+                        Some((addr as usize - 0x8000) & 0x7FFF)
                     } else {
-                        Some(addr as usize & 0x3FFF)
+                        Some((addr as usize - 0x8000) & 0x3FFF)
                     }
                 } else {
                     None
@@ -49,5 +50,8 @@ impl Mapper {
                 }
             }
         }
+    }
+    fn mapper_001(&self, src: Source, addr: u16) -> Option<usize> {
+        
     }
 }
