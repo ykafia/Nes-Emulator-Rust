@@ -1,11 +1,11 @@
 // use super::super::components::*;
-use super::{super::utils::*, APU, PPU, PPUComponents};
+use super::{super::utils::*, APU, Cartridge, PPU, PPUComponents};
 
 pub struct NesData {
     /// Ram data, from 0x0000 to 0x1FFF
     pub ram: [u8; 0x2000],
     /// Cartridge data, from 0x4020 to 0xFFFF
-    pub cartridge: [u8; 0xBFDF],
+    pub cartridge: Cartridge,
     /// PPU Registers
     pub ppu_registers : [u8; 0x0007],
     /// APU Registers
@@ -27,7 +27,7 @@ impl NesData {
     pub fn new() -> NesData {
         NesData {
             ram: [0u8; 0x2000],
-            cartridge: [0u8; 0xBFDF],
+            cartridge: Cartridge::new(),
             ppu_registers : [0u8; 0x0007],
             apu : APU::new(),
             ppu : PPU::new(),
@@ -35,7 +35,7 @@ impl NesData {
         }
     }
     pub fn insert_cartridge(&mut self, cartridge: [u8; 0xBFDF]) {
-        self.cartridge = cartridge;
+        self.cartridge.load(cartridge);
     }
     pub fn reset_memory(&mut self) {}
     pub fn clock(&mut self) {}

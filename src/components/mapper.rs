@@ -1,39 +1,53 @@
 use super::*;
 
-pub struct Mapper;
+pub struct Mapper {
+    pub mapper_id: u16,
+    pub nb_prg_banks: u16,
+    pub nb_chr_banks: u16,
+}
 
 pub enum Source {
     CPU,
-    PPU
+    PPU,
 }
 
 impl Mapper {
-    /// General mapper function
-    pub fn map(id : u8, src: Source, addr: u16, n_p_banks : usize) -> (bool,usize){
-        match id {
-            0 => Mapper::mapper_000(src, addr, n_p_banks),
-            _ => (false,0),
+    pub fn new(header: Vec<u8>) -> Self {
+        Mapper {
+            mapper_id: 0,
+            nb_prg_banks: 0,
+            nb_chr_banks: 0,
         }
     }
 
-    fn mapper_000(src: Source, addr: u16, n_p_banks : usize) -> (bool,usize) {
+    /// General mapper function
+    pub fn map(&self, src: Source, addr: u16) -> Option<usize> {
+        match self.mapper_id {
+            0 => self.mapper_000(src, addr),
+            _ => None,
+        }
+    }
+
+    fn mapper_000(&self, src: Source, addr: u16) -> Option<usize> {
         match src {
             Source::CPU => {
-                if addr >= 0x8000{
-                    if n_p_banks > 1 {(true, addr as usize & 0x7FFF)} else {(true, addr as usize & 0x3FFF)}
+                if addr >= 0x8000 {
+                    if self.nb_prg_banks > 1 {
+                        Some(addr as usize & 0x7FFF)
+                    } else {
+                        Some(addr as usize & 0x3FFF)
+                    }
+                } else {
+                    None
                 }
-                else {
-                    (false,0)
-                }
-            },
+            }
             Source::PPU => {
                 if addr <= 0x0FFF {
-                    (true,addr.into())
+                    Some(addr.into())
+                } else {
+                    None
                 }
-                else {
-                    (false,0)
-                }
-            },
+            }
         }
     }
 }
