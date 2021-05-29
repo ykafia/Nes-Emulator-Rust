@@ -52,6 +52,6 @@ impl Mapper {
         }
     }
     fn mapper_001(&self, src: Source, addr: u16) -> Option<usize> {
-        
+        None
     }
 }

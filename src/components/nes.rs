@@ -34,7 +34,7 @@ impl NesData {
             clock_counter: 0,
         }
     }
-    pub fn insert_cartridge(&mut self, cartridge: [u8; 0xBFDF]) {
+    pub fn insert_cartridge(&mut self, cartridge: Vec<u8>) {
         self.cartridge.load(cartridge);
     }
     pub fn reset_memory(&mut self) {}
@@ -47,7 +47,7 @@ impl DataActions for NesData {
             NESComponents::RAM => self.ram[(addr % 0x07ff) as usize] = data,
             NESComponents::APU => self.apu.registers[((addr - 0x4000) & 0x0017) as usize] = data,
             NESComponents::PPU => self.ppu_registers[((addr - 0x2000) & 0x0007) as usize] = data,
-            NESComponents::CARTRIDGE => self.cartridge[(addr - 0x4020) as usize] = data,
+            NESComponents::CARTRIDGE => self.cartridge.cpu_write(addr, data),
             _ => (),
         }
     }
@@ -57,10 +57,7 @@ impl DataActions for NesData {
                 true => self.ram[(addr & 0x07ff) as usize],
                 false => self.ram[(addr & 0x07ff) as usize],
             },
-            NESComponents::CARTRIDGE => match read_only {
-                true => self.cartridge[(addr - 0x4020) as usize],
-                false => self.cartridge[(addr - 0x4020) as usize],
-            },
+            NESComponents::CARTRIDGE =>  self.cartridge.cpu_read(addr),
             NESComponents::PPU => match read_only {
                 true => self.ppu_registers[((addr - 0x2000) & 0x0007) as usize],
                 false => self.ppu_registers[((addr - 0x2000) & 0x0007) as usize],
@@ -87,7 +84,7 @@ impl DataActions for NesData {
     fn ppu_read(&mut self, addr: u16, read_only: bool) -> u8 {
         match addr.to_where() {
             PPUComponents::PALLETTE => self.ppu.pallette[addr as usize],
-            PPUComponents::PATTERN => self.cartridge[(addr + 0x4020) as usize],
+            PPUComponents::PATTERN => self.cartridge.ppu_read(addr),
             PPUComponents::NAMETABLES => {
                 let index = if (addr - 0x2000) & 0x0800 < 0x400 {0} else {1};
                 self.ppu.names[index][((addr - 0x2000) & 0x0400) as usize]

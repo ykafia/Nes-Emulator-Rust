@@ -94,3 +94,35 @@ fn test_code() -> Vec<u8> {
     file.read_to_end(&mut contents).unwrap();
     contents
 }
+
+fn load_mario() -> Vec<u8> {
+    let mut file = File::open("roms/Super Mario Bros.nes").unwrap();
+    let mut contents = Vec::new();
+    file.read_to_end(&mut contents).unwrap();
+    contents
+}
+fn load_metroid() -> Vec<u8> {
+    let mut file = File::open("roms/Metroid.nes").unwrap();
+    let mut contents = Vec::new();
+    file.read_to_end(&mut contents).unwrap();
+    contents
+}
+
+#[test]
+pub fn metroid_header(){ 
+    let mut cartridge = Cartridge::new();
+    cartridge.load(load_mario());
+    println!("{}",cartridge.header);
+}
+
+
+#[test]
+pub fn test_mapper1_read(){
+    let mut cartridge = Cartridge::new();
+    cartridge.load(load_mario());
+    assert_eq!(cartridge.prg_memory[0], cartridge.cpu_read(0x8000));
+    assert_eq!(cartridge.prg_memory[0x0032], cartridge.cpu_read(0x8000 + 0x0032));
+    assert_eq!(cartridge.chr_memory[0], cartridge.ppu_read(0x0000));
+    assert_eq!(cartridge.chr_memory[0x0032], cartridge.ppu_read(0x0032));
+}
+
